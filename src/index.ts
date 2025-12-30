@@ -1,11 +1,9 @@
 import { Elysia } from "elysia";
-import prisma from "./db";
 
 
 
 const app = new Elysia().get("/", async() => {
-  const course = await prisma.course.findMany();
-  return course;
+  return "Hello Elysia";
 }).listen(3000);
 
 
