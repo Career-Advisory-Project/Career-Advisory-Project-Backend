@@ -5,7 +5,6 @@ const prismaClientSingleton = () => {
 };
 
 declare global {
-  // This prevents TypeScript errors when using globalThis
   var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton>;
 }
 
