@@ -1,10 +1,12 @@
 import { Elysia } from "elysia";
+import { courseModule } from './modules/course';
+import { swagger } from '@elysiajs/swagger'
 
 
-
-const app = new Elysia().get("/", async() => {
-  return "Hello Elysia";
-}).listen(3000);
+const app = new Elysia()
+    .use(swagger())
+    .use(courseModule)
+    .listen(3000)
 
 
 console.log(
