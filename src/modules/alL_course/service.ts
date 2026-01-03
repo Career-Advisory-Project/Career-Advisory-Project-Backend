@@ -35,11 +35,11 @@ export class AllCourse {
 
     static async getCourseByCourseNo(courseNo: string) {
         try {
-            const response = await axiosInstance.get(`/course/detail/`,{
+            const response = await axiosInstance.get(`/course/detail/`, {
                 params: {
-                    courseId:{
-                        courseNo:courseNo
-                    }
+
+                    courseNo: courseNo
+
                 }
             });
             return response.data;
