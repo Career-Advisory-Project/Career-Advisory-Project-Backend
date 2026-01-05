@@ -22,6 +22,7 @@ model Course {
   name String
   descTH String? 
   descENG String?
+  skills Skill[]
 }
 
 model Skill {
@@ -32,9 +33,23 @@ model Skill {
   descTH String? 
   descENG String?
   status String
-  tag String[]
+  tag Tag[]
   rubrics Rubric[]
+  courseId String? @db.ObjectId
+  course Course? @relation(fields: [courseId], references: [id])
+
 }
+model Tag {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime
+  updatedAt DateTime
+  name String
+  abbr String 
+  skillId String @db.ObjectId
+  skill Skill @relation(fields: [skillId], references: [id])
+}
+
+
 
 model Rubric {
   id String @id @default(auto()) @map("_id") @db.ObjectId
@@ -44,3 +59,4 @@ model Rubric {
   skillId String @db.ObjectId
   skill Skill @relation(fields: [skillId], references: [id])
 }
+
