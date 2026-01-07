@@ -3,7 +3,6 @@ import { t } from 'elysia'
 import { Auth } from './service'
 import jwt from '@elysiajs/jwt'
 
-
 export const auth = new Elysia({ prefix: '/auth' })
     .use(
         jwt({
@@ -48,7 +47,7 @@ export const auth = new Elysia({ prefix: '/auth' })
 
                 return { ok: true }
             }
-            catch(error) {
+            catch (error) {
                 console.error(error)
                 return {
                     ok: false,
@@ -58,6 +57,32 @@ export const auth = new Elysia({ prefix: '/auth' })
         }, {
         body: t.Object({
             authorizationCode: t.String()
+        })
+
+    })
+    .get('/me', async ({ jwt, cookie: { "cmu-entraid-example-token": cmuToken }, status }) => {
+
+        // Check if the token exists
+        if (!cmuToken.value) {
+            return status(401, "Unauthorized")
+        }
+
+        // Verify
+        const profile = await jwt.verify(cmuToken.value)
+
+        if (!profile) {
+            return status(401, "Unauthorized")
+        }
+
+        return {
+            ok: true,
+            user: profile
+        }
+
+    }, {
+        cookie: t.Cookie({
+            // Use quotes because the name contains hyphens
+            "cmu-entraid-example-token": t.String()
         })
     })
     ;
