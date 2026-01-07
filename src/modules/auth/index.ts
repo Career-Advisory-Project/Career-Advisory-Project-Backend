@@ -12,7 +12,7 @@ export const auth = new Elysia({ prefix: '/auth' })
     )
     .post(
         '/signIn',
-        async ({ jwt, body: { authorizationCode }, cookie: { cmuToken } }) => {
+        async ({ jwt, body: { authorizationCode }, cookie: { "cmu-entraid-example-token": cmuToken } }) => {
             try {
                 const accessToken = await Auth.getAccessToken(authorizationCode);
                 if (!accessToken) throw new Error('Failed to get access token');
@@ -20,7 +20,7 @@ export const auth = new Elysia({ prefix: '/auth' })
                 const cmuBasicInfo = await Auth.getBasicInfo(accessToken);
                 if (!cmuBasicInfo) throw new Error('Failed to get basic info');
 
-                const token = jwt.sign({
+                const token = await jwt.sign({
                     cmuitaccount_name: cmuBasicInfo.cmuitaccount_name,
                     cmuitaccount: cmuBasicInfo.cmuitaccount,
                     student_id: cmuBasicInfo.student_id,
@@ -62,27 +62,27 @@ export const auth = new Elysia({ prefix: '/auth' })
     })
     .get('/me', async ({ jwt, cookie: { "cmu-entraid-example-token": cmuToken }, status }) => {
 
-        // Check if the token exists
-        if (!cmuToken.value) {
-            return status(401, "Unauthorized")
-        }
+    // Check if the token exists
+    if (!cmuToken.value) {
+        return status(401, "Unauthorized")
+    }
 
-        // Verify
-        const profile = await jwt.verify(cmuToken.value)
+    // Verify
+    const profile = await jwt.verify(cmuToken.value)
 
-        if (!profile) {
-            return status(401, "Unauthorized")
-        }
+    if (!profile) {
+        return status(401, "Unauthorized")
+    }
 
-        return {
-            ok: true,
-            user: profile
-        }
+    return {
+        ok: true,
+        user: profile
+    }
 
-    }, {
-        cookie: t.Cookie({
-            // Use quotes because the name contains hyphens
-            "cmu-entraid-example-token": t.String()
-        })
+}, {
+    cookie: t.Cookie({
+        // 2. SCHEMA MUST ALSO MATCH THE EXACT COOKIE NAME
+        "cmu-entraid-example-token": t.String()
     })
+})
     ;
