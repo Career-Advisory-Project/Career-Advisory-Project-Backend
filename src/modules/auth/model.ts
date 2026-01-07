@@ -2,7 +2,6 @@ import { t } from 'elysia'
 
 export namespace AuthModel {
     export const basicUserInfo = t.Object({
-
         cmuitaccount_name: t.String(),
         cmuitaccount: t.String(),
         student_id: t.String().Nullable(), //somehow nullable
@@ -30,4 +29,9 @@ export namespace AuthModel {
         grant_type: t.String(),
     });
     export type oAuthRequestType = typeof oAuthRequest.static;
+
+    export const authorizationCode = t.Object({
+        authorizationCode: t.String()
+    });
+    export type authorizationCodeType = typeof authorizationCode.static;
 }

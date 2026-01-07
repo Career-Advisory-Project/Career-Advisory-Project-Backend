@@ -10,7 +10,7 @@ const app = new Elysia().get("/", async() => {
 .use(swagger())
 .listen(3000);
 
-
+console.log(`Test login url: ${process.env.CMU_ENTRAID_URL}`)
 console.log(
   `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
 );
