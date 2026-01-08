@@ -39,6 +39,13 @@ model Skill {
   course Course? @relation(fields: [courseId], references: [id])
 
 }
+
+type Rubric {
+  level   Int
+  descTH  String?
+  descENG String?
+}
+
 model Tag {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   createdAt DateTime
@@ -48,15 +55,3 @@ model Tag {
   skillId String @db.ObjectId
   skill Skill @relation(fields: [skillId], references: [id])
 }
-
-
-
-model Rubric {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  level Int
-  descTH String? 
-  descENG String?
-  skillId String @db.ObjectId
-  skill Skill @relation(fields: [skillId], references: [id])
-}
-

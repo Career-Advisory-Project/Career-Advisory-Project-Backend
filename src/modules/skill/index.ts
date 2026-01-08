@@ -1,4 +1,4 @@
-import { Elysia } from "elysia";
+import { Elysia , t} from "elysia";
 import prisma from "../../db";
 import { swagger } from "@elysiajs/swagger";
 
@@ -10,13 +10,85 @@ const app = new Elysia()
     return courses;
   })
 
-  .get("/course/:id", async ({ params }) => {
+  .get("/course/:courseId", async ({ params }) => {
     const course = await prisma.course.findUnique({
-      where: { id: params.id.trim() },
+      where: { id: params.courseId.trim() },
       select: { id: true, name: true },
     });
     return course;
   })
+
+.get("/course/:courseId/skills", async ({ params, query }) => {
+  const courseId = params.courseId.trim();
+
+  let levelMap: Record<string, number> | undefined;
+  const levelsRaw = (query as any)?.levels;
+  if (levelsRaw) {
+    try {
+      levelMap = JSON.parse(levelsRaw);
+    } catch {
+      return new Response(JSON.stringify({ error: "levels must be valid JSON" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+  }
+
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: {
+      id: true,
+      name: true,
+      skills: {
+        select: { id: true, name: true, descTH: true, descENG: true, rubrics: true },
+      },
+    },
+  });
+
+  if (!course) {
+    return new Response(JSON.stringify({ error: "Course not found" }), {
+      status: 404,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const skills = course.skills.map((s) => {
+    const rubrics = (s.rubrics || []) as any[];
+    const targetLevel = levelMap?.[s.id];
+
+    if (targetLevel === undefined) {
+      return { ...s, rubrics: [] };
+    }
+
+    const chosen = rubrics.find((r) => r.level === Number(targetLevel));
+    return { ...s, rubrics: chosen ? [chosen] : [] };
+  });
+
+  return { ...course, skills };
+})
+//http://localhost:3002/course/688b6c96d4ea26aaa01b9fd8/skills?levels={"677be05bcdd3728d72efee02":4,"677be1d3cdd3728d72efee06":2}
+
+  .get("/course/:courseId/skill/:skillId", async ({ params }) => {
+    const skill = await prisma.skill.findUnique({
+      where: { id: params.skillId.trim() },
+      select: { id: true, name: true, descTH: true, descENG: true },
+    });
+    return skill;
+  })
+
+  .get("/course/:courseId/skill/:skillId/rubrics", async ({ params }) => {
+    const skill = await prisma.skill.findUnique({
+      where: { id: params.skillId.trim() },
+      select: { rubrics: true },
+    });
+    if (!skill) {
+      return new Response(JSON.stringify({ error: "Skill not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    return skill.rubrics;
+  })  
 
   .get("/skills", async () => {
     const skills = await prisma.skill.findMany({
@@ -49,6 +121,21 @@ const app = new Elysia()
     });
     return tags;
   })
+
+  .get("/skill/:id/rubrics", async ({ params }) => {
+    const skill = await prisma.skill.findUnique({
+      where: { id: params.id.trim() },
+      select: { rubrics: true },
+    });
+    if (!skill) { 
+      return new Response(JSON.stringify({ error: "Skill not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    return skill.rubrics;
+  })
+
 
   // Create standalone skill (not attached to any course)
   .post("/skill", async (context) => {
@@ -105,8 +192,6 @@ const app = new Elysia()
     return s;
   })
 
-  
-
   .post("/skill/:skillId/tag/:tagId", async ({ params }) => {
     const updated = await prisma.tag.update({
       where: { id: params.tagId.trim() },
@@ -125,7 +210,33 @@ const app = new Elysia()
     return updated;
   })
 
-  // Detach a skill from a course (set courseId to null)
+  .post("/course/:courseId/skill/:skillId/rubrics", async (context) => {
+    const { params } = context as { params: { courseId: string; skillId: string } };
+    const body = (context as any).body || {};
+    const skill = await prisma.skill.findUnique({
+      where: { id: params.skillId.trim() },
+      select: { rubrics: true },
+    });
+    if (!skill) {
+      return new Response(JSON.stringify({ error: "Skill not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const newRubric = {
+      level: body.level,
+      descTH: body.descTH,
+      descENG: body.descENG,
+    };
+    const updatedRubrics = [...(skill.rubrics || []), newRubric];
+    const updated = await prisma.skill.update({
+      where: { id: params.skillId.trim() },
+      data: { rubrics: updatedRubrics },
+      select: { name: true, rubrics: true },
+    });
+    return updated;
+  })
+
   .delete("/course/:courseId/skill/:skillId", async ({ params }) => {
     const skill = await prisma.skill.findUnique({
       where: { id: params.skillId.trim() },
@@ -166,17 +277,26 @@ const app = new Elysia()
     }
   })
 
-
-  .get("/course/:id/skills", async ({ params }) => {
-    return prisma.course.findUnique({
-      where: { id: params.id.trim() },
-      include: {
-        skills: {
-          select: { name: true, descTH: true, descENG: true, rubrics: true },
-        },
-      },
+  .delete("/course/:courseId/skill/:skillId/rubric/:level", async ({ params }) => {
+    const skill = await prisma.skill.findUnique({
+      where: { id: params.skillId.trim() },
+      select: { rubrics: true },
     });
+    if (!skill) {
+      return new Response(JSON.stringify({ error: "Skill not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const updatedRubrics = skill.rubrics.filter((r) => r.level !== parseInt(params.level));
+    const updated = await prisma.skill.update({
+      where: { id: params.skillId.trim() },
+      data: { rubrics: updatedRubrics },
+      select: { name: true, rubrics: true },
+    });
+    return updated;
   })
+
 
   .use(swagger())
   .listen(3002);
