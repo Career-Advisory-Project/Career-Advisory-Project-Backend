@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
 import { auth } from "./modules/auth";
-import { allCourse } from "./modules/alL_course";
+import { allCourse } from "./modules/all_course";
 import {swagger} from '@elysiajs/swagger'
 import cors from "@elysiajs/cors";
 const app = new Elysia().get("/", async() => {

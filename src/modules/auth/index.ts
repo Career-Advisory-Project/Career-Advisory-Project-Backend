@@ -62,12 +62,10 @@ export const auth = new Elysia({ prefix: '/auth' })
     })
     .get('/me', async ({ jwt, cookie: { "cmu-entraid-example-token": cmuToken }, status }) => {
 
-    // Check if the token exists
     if (!cmuToken.value) {
         return status(401, "Unauthorized")
     }
 
-    // Verify
     const profile = await jwt.verify(cmuToken.value)
 
     if (!profile) {
@@ -81,7 +79,6 @@ export const auth = new Elysia({ prefix: '/auth' })
 
 }, {
     cookie: t.Cookie({
-        // 2. SCHEMA MUST ALSO MATCH THE EXACT COOKIE NAME
         "cmu-entraid-example-token": t.String()
     })
 })
