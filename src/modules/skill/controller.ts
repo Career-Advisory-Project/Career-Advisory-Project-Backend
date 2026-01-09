@@ -40,6 +40,7 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
     }, {
         body: CourseSkillModel.CreateCourseSkillRequest
     })
+
     .patch("/:id", async ({ params: { id }, body, set }) => {
         try {
             return await CourseSkillService.update(id, body);
@@ -52,6 +53,23 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
         body: CourseSkillModel.UpdateCourseSkill // From model.ts
     })
 
+    .patch("/:id/skills/:skillId/rubrics", async ({ params: { id, skillId }, body, set }) => {
+        try {
+            return await CourseSkillService.updateSkillRubrics(id, skillId, body.selectedRubricLevels);
+        } catch (error: any) {
+            set.status = 400;
+            return { error: error.message };
+        }
+    }, {
+        params: t.Object({
+            id: t.String(),
+            skillId: t.String()
+        }),
+        body: t.Object({
+            selectedRubricLevels: t.Array(t.Integer())
+        })
+    })
+
     .delete("/:id", async ({ params: { id }, set }) => {
         try {
             await CourseSkillService.delete(id);
@@ -62,4 +80,18 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
         }
     }, {
         params: t.Object({ id: t.String() })
+    })
+
+    .delete("/:id/skills/:skillId", async ({ params: { id, skillId }, set }) => {
+        try {
+            return await CourseSkillService.removeSkillFromCourse(id, skillId);
+        } catch (error: any) {
+            set.status = 400;
+            return { error: error.message };
+        }
+    }, {
+        params: t.Object({
+            id: t.String(),
+            skillId: t.String() 
+        })
     });

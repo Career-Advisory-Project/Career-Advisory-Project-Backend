@@ -94,5 +94,52 @@ export const CourseSkillService = {
                 }
             });
         }
+    },
+
+    async removeSkillFromCourse(courseSkillId: string, skillId: string) {
+        const record = await prisma.courseSkill.findUnique({
+            where: { id: courseSkillId }
+        });
+
+        if (!record) throw new Error("CourseSkill record not found");
+        const updatedSkills = record.skills.filter(s => s.id !== skillId);
+        return await prisma.courseSkill.update({
+            where: { id: courseSkillId },
+            data: {
+                skills: updatedSkills
+            }
+        });
+    },
+    
+    async updateSkillRubrics(courseSkillId: string, skillId: string, newRubricLevels: number[]) {
+        const record = await prisma.courseSkill.findUnique({
+            where: { id: courseSkillId }
+        });
+
+        if (!record) throw new Error("CourseSkill record not found");
+
+        const masterSkill = await prisma.skill.findUnique({
+            where: { id: skillId }
+        });
+
+        if (!masterSkill) throw new Error("Master Skill not found");
+
+        const updatedRubricData = masterSkill.rubrics.filter((r: any) => 
+            newRubricLevels.includes(r.level)
+        );
+
+        const updatedSkills = record.skills.map(skill => {
+            if (skill.id === skillId) {
+                return { ...skill, rubrics: updatedRubricData };
+            }
+            return skill;
+        });
+
+        return await prisma.courseSkill.update({
+            where: { id: courseSkillId },
+            data: {
+                skills: updatedSkills
+            }
+        });
     }
 };

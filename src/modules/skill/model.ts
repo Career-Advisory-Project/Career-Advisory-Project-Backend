@@ -81,7 +81,7 @@ export namespace CourseSkillModel {
     courseId: t.String(),
     skillSelections: t.Array(t.Object({
         skillId: t.String(),
-        selectedRubricLevels: t.Array(t.Integer()) // Which rubric levels to include
+        selectedRubricLevels: t.Array(t.Integer()) 
     }))
 });
 }
