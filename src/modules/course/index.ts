@@ -1,18 +1,13 @@
 import { Elysia, t } from 'elysia';
 import { getTeacherCourse } from './service';
+import { status } from 'elysia';
 
 export const courseRoute = new Elysia({ prefix: '/course' })
     .get(
         '/:teacherID',
         async ({ params, set }) => {
             const { teacherID } = params;
-            const result = await getTeacherCourse(teacherID);
-            
-            if (!result.ok) {
-                set.status = 404;
-                return result;
-            }
-            return result;
+            return await getTeacherCourse(teacherID);
         },
         {
             params: t.Object({

@@ -1,5 +1,6 @@
 import prisma from '../../db';
 import { scanTeacherCourse } from './scan/scanTeacherCourse';
+import { status } from 'elysia';
 
 export async function getTeacherCourse(teacherID: string) {
   const record = await prisma.teacherCourse.findUnique({
@@ -8,12 +9,10 @@ export async function getTeacherCourse(teacherID: string) {
 
   if (!record) {
     scanTeacherCourse(teacherID).catch(() => {});
-
-    return {
+    return status(404, {
       ok: false,
-      statusCode: 404,
-      message: 'Teacher ID not found on the record',
-    };
+      detail: 'Teacher ID not found on the record',
+    });
   }
 
   return {
