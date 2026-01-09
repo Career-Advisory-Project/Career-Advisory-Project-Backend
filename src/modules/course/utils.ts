@@ -1,5 +1,5 @@
 export function getCurrentAcademicYear(): number {
-  return new Date().getFullYear() + 543 - 2; //i want to start at 2566 ja
+  return new Date().getFullYear() + 543 - 2; //2566 (scan 2565,2564)
 }
 
 export function matchTeacher(sec: any, teacherID: string): boolean {

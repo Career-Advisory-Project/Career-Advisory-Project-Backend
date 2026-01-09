@@ -1,33 +1,31 @@
-import { getFromCache, setProcessing } from './cache/teacherCourse.cache';
+import prisma from '../../db';
 import { scanTeacherCourse } from './scan/scanTeacherCourse';
 
 export async function getTeacherCourse(teacherID: string) {
-    const cached = getFromCache(teacherID);
+  const record = await prisma.teacherCourse.findUnique({
+    where: { teacherID },
+  });
 
-    if (cached?.status === 'done') {
-        return {
-            ok: true,
-            status: 'done',
-            data: cached.data,
-        };
-    }
+  if (!record) {
+    scanTeacherCourse(teacherID).catch(() => {});
 
-    if (cached?.status === 'processing') {
-        return {
-            ok: true,
-            status: 'processing',
-        };
-    }
+    return {
+      ok: false,
+      statusCode: 404,
+      message: 'Teacher ID not found on the record',
+    };
+  }
 
-    if (cached?.status === 'error') {
-        return {
-            ok: false,
-            status: 'error',
-            message: cached.error,
-        };
-    }
-
-    setProcessing(teacherID);
-    scanTeacherCourse(teacherID);
-    return { ok: true, status: 'processing' };
+  return {
+    ok: true,
+    id: record.teacherID,
+    titleTH: record.titleTH,
+    titleEN: record.titleEN,
+    firstNameTH: record.firstNameTH,
+    firstNameEN: record.firstNameEN,
+    lastNameTH: record.lastNameTH,
+    lastNameEN: record.lastNameEN,
+    courses: record.courses,
+    updatedAt: record.updatedAt,
+  };
 }

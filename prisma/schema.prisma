@@ -23,3 +23,17 @@ model Course {
   descTH String? 
   descENG String?
 }
+
+model TeacherCourse {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  teacherID String @unique
+  titleTH String?
+  titleEN String?
+  firstNameTH String?
+  firstNameEN String?
+  lastNameTH String?
+  lastNameEN String?
+  courses Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

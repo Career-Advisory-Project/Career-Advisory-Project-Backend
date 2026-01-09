@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { getCurrentAcademicYear, matchTeacher } from '../utils';
-import { setDone, setError } from '../cache/teacherCourse.cache';
 
 const BASE_URL = process.env.CPE_API_BASE_URL!;
 const API_KEY = process.env.CPE_API_KEY!;
@@ -101,12 +100,9 @@ export async function scanTeacherCourse(teacherID: string) {
       });
 
       const result = {
-        ok: true,
         teacher,
         teacherCourse,
       };
-
-      setDone(teacherID, result);
 
       if (process.env.NODE_ENV !== 'production') {
         console.log('scan finished');
@@ -114,8 +110,10 @@ export async function scanTeacherCourse(teacherID: string) {
         console.log('section requests:', sectionRequestCount);
         console.log('found courses:', teacherCourse.length);
       }
+
+      return result;
     } catch (err: any) {
       console.error('!!!scan error', err);
-      setError(teacherID, err.message ?? 'unknown error');
+      throw err;
     }
 }
