@@ -1,0 +1,12 @@
+services:
+  elysia-backend:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file: ".env"
+
+    command: bun --watch src/index.ts
+
+    volumes:
+      - .:/app
+      - /app/node_modules 
