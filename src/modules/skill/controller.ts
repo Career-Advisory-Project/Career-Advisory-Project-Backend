@@ -40,42 +40,7 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
     }
   )
 
-  // POST remains the same...
-  .post(
-    "/",
-    async ({ body, set }) => {
-      try {
-        return await CourseSkillService.createSnapshot(
-          body.courseId,
-          body.skillSelections
-        );
-      } catch (error: any) {
-        set.status = 400;
-        return { error: error.message };
-      }
-    },
-    {
-      body: CourseSkillModel.CreateCourseSkillRequest,
-    }
-  )
-
-  .patch(
-    "/:id",
-    async ({ params: { id }, body, set }) => {
-      try {
-        return await CourseSkillService.update(id, body);
-      } catch (error: any) {
-        set.status = 400;
-        return { error: error.message };
-      }
-    },
-    {
-      params: t.Object({ id: t.String() }),
-      body: CourseSkillModel.UpdateCourseSkill, // From model.ts
-    }
-  )
-
-  .patch(
+    .patch(
     "/skills/rubrics",
     async ({ body, set }) => {
       try {

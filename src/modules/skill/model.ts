@@ -59,6 +59,7 @@ export namespace CourseSkillModel {
         descTH: t.Optional(t.Nullable(t.String())),
         descENG: t.Optional(t.Nullable(t.String())),
         status: t.String(),
+        tag: t.Array(Tag),
         rubrics: t.Array(Rubric),
     });
 

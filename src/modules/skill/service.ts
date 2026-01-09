@@ -78,7 +78,7 @@ export const CourseSkillService = {
             return await prisma.courseSkill.update({
                 where: { id: existingCourseSkill.id },
                 data: {
-                    skills: currentSkills
+                    skills: { set: currentSkills }
                 }
             });
         } else {
@@ -105,43 +105,37 @@ export const CourseSkillService = {
         return await prisma.courseSkill.update({
             where: { id: courseSkillId },
             data: {
-                skills: updatedSkills
+                skills: { set: updatedSkills }
             }
         });
     },
 
     async updateSkillRubrics(courseSkillId: string, skillId: string, newRubricLevels: number) {
-        
-        const record = await prisma.courseSkill.findUnique({
-            where: { id: courseSkillId }
-        });
-        if (!record) throw new Error("CourseSkill record not found");
+  const record = await prisma.courseSkill.findUnique({ where: { id: courseSkillId } });
+  if (!record) throw new Error("CourseSkill record not found");
 
-        const masterSkill = await prisma.skill.findUnique({
-            where: { id: skillId },
-            include: { tag: true }
-        });
-        if (!masterSkill) throw new Error("Master Skill not found");
+  const masterSkill = await prisma.skill.findUnique({
+    where: { id: skillId },
+    include: { tag: true }
+  });
+  if (!masterSkill) throw new Error("Master Skill not found");
 
-        const updatedRubricData = masterSkill.rubrics.filter((r: any) => 
-            r.level === newRubricLevels
-        );
-        if(!updatedRubricData) {
-            throw new Error("No matching rubric levels found in master skill");
-        }
+  const updatedRubricData = masterSkill.rubrics.filter((r: any) => r.level === newRubricLevels);
+  if (updatedRubricData.length === 0) {
+    throw new Error("No matching rubric levels found in master skill");
+  }
 
-        const updatedSkills = record.skills.map(skill => {
-            if (skill.id === skillId) {
-                return { ...skill, rubrics: updatedRubricData };
-            }
-            return skill;
-        });
-        console.log("Updated Skills:", updatedSkills);
-        return await prisma.courseSkill.update({
-            where: { id: courseSkillId },
-            data: {
-                skills: updatedSkills
-            }
-        });
+  const updatedSkills = record.skills.map((skill) => {
+    if (skill.id === skillId) return { ...skill, rubrics: updatedRubricData };
+    return skill;
+  });
+
+  return await prisma.courseSkill.update({
+    where: { id: courseSkillId },
+    data: {
+      skills: { set: updatedSkills }
     }
+  });
+},
+
 };
