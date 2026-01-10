@@ -96,7 +96,7 @@ model TeacherCourse {
   firstNameEN String?
   lastNameTH String?
   lastNameEN String?
-  courses Json
+  courseNos   String[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
