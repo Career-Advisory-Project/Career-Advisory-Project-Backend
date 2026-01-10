@@ -15,6 +15,24 @@ export async function getTeacherCourse(teacherID: string) {
     });
   }
 
+  const courseNos = (record.courses as any[]).map(
+    (c) => c.courseNo
+  );
+
+  const coursesWithSkills = await prisma.course.findMany({
+    where: {
+      courseNo: { in: courseNos },
+    }
+  });
+
+  const enrichedCourses = (record.courses as any[]).map((c) => ({
+    ...c,
+    skills:
+      (coursesWithSkills as any[]).find(
+        (dbCourse: any) => dbCourse.courseNo === c.courseNo
+      )?.skills ?? [],
+  }));
+
   return {
     ok: true,
     id: record.teacherID,
@@ -24,7 +42,7 @@ export async function getTeacherCourse(teacherID: string) {
     firstNameEN: record.firstNameEN,
     lastNameTH: record.lastNameTH,
     lastNameEN: record.lastNameEN,
-    courses: record.courses,
+    courses: enrichedCourses,
     updatedAt: record.updatedAt,
   };
 }
