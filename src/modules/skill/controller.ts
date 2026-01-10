@@ -40,17 +40,20 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
     }
   )
 
-    .patch(
+  .patch(
     "/skills/rubrics",
     async ({ body, set }) => {
+      console.log("request made to update skill rubrics:", body);
       try {
-        return await CourseSkillService.updateSkillRubrics(
+        const data = await CourseSkillService.updateSkillRubrics(
           body.id,
           body.skillId,
           body.selectedRubricLevels
         );
+        return data;
       } catch (error: any) {
         set.status = 400;
+        console.log(error);
         return { error: error.message };
       }
     },
@@ -63,23 +66,23 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
     }
   )
 
-.patch(
-  "/course",
-  async ({ body, set }) => {
-    try {
-      return await CourseSkillService.updateCourseSkills(
-        body.courseId,
-        body.skills
-      );
-    } catch (error: any) {
-      set.status = 400;
-      return { error: error.message };
+  .patch(
+    "/course",
+    async ({ body, set }) => {
+      try {
+        return await CourseSkillService.updateCourseSkills(
+          body.courseId,
+          body.skills
+        );
+      } catch (error: any) {
+        set.status = 400;
+        return { error: error.message };
+      }
+    },
+    {
+      body: CourseSkillModel.UpdateCourseSkill,
     }
-  },
-  {
-    body: CourseSkillModel.UpdateCourseSkill,
-  }
-)
+  )
 
   .delete(
     "/:id",
