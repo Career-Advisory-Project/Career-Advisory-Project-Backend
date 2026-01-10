@@ -4,6 +4,7 @@ import { swagger } from '@elysiajs/swagger'
 import { auth } from "./modules/auth";
 import { allCourse } from "./modules/all_course";
 import cors from "@elysiajs/cors";
+import { courseSkillController } from "./modules/skill/controller";
 
 const app = new Elysia().get("/", async() => {
   return "Hello Elysia"})
@@ -16,7 +17,10 @@ const app = new Elysia().get("/", async() => {
   .use(courseRoute)
   .use(auth)
   .use(allCourse)
+  .use(courseSkillController)
+
   .listen(3000);
+
 
 console.log(`Test login url: ${process.env.CMU_ENTRAID_URL}`)
 console.log(
