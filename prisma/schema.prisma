@@ -86,6 +86,7 @@ type RubricData {
   level   Int
   descTH  String?
   descENG String?
+}
 model TeacherCourse {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   teacherID String @unique

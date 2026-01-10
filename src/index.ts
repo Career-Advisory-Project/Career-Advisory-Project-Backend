@@ -19,7 +19,10 @@ const app = new Elysia().get("/", async() => {
   .use(allCourse)
   .use(courseSkillController)
 
-  .listen(3000);
+  .listen({
+    port: 3000,
+    hostname: '0.0.0.0' 
+  });
 
 
 console.log(`Test login url: ${process.env.CMU_ENTRAID_URL}`)
