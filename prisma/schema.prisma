@@ -39,7 +39,6 @@ model Tag {
   tagGroupId String? @db.ObjectId
   tagGroup TagGroup? @relation(fields: [tagGroupId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   skillId String? @db.ObjectId
-  skill Skill? @relation(fields: [skillId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model TagGroup {
@@ -59,7 +58,7 @@ model Skill {
   descTH String? 
   descENG String?
   status String
-  tag Tag[]
+  tag String[]
   rubrics Rubric[]
 }
 

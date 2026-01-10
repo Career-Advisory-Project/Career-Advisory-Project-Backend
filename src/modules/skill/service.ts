@@ -40,7 +40,6 @@ export const CourseSkillService = {
             skillSelections.map(async (selection) => {
                 const skill = await prisma.skill.findUnique({
                     where: { id: selection.skillId },
-                    include: { tag: true }
                 });
 
                 if (!skill) return null;
@@ -50,7 +49,7 @@ export const CourseSkillService = {
                     name: skill.name,
                     descTH: skill.descTH,
                     descENG: skill.descENG,
-                    tag: skill.tag.map((t: any) => t.name),
+                    tag: skill.tag,
                     rubrics: skill.rubrics.filter((r: any) => 
                         r.level === selection.selectedRubricLevels
                     )
@@ -116,7 +115,6 @@ export const CourseSkillService = {
 
   const masterSkill = await prisma.skill.findUnique({
     where: { id: skillId },
-    include: { tag: true }
   });
   if (!masterSkill) throw new Error("Master Skill not found");
 
