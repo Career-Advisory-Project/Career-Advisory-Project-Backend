@@ -76,7 +76,10 @@ export namespace CourseSkillModel {
 
     export const CreateCourseSkill = t.Omit(CourseSkill, ['id', 'createdAt', 'updatedAt']);
     
-    export const UpdateCourseSkill = t.Partial(CreateCourseSkill);
+    export const UpdateCourseSkill = t.Object({
+        courseId: t.String(),
+        skills: t.Array(SkillData),
+    });
 
     export const CreateCourseSkillRequest = t.Object({
     courseId: t.String(),

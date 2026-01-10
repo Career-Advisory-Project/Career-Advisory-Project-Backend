@@ -7,7 +7,7 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
     "/",
     async ({ body, set }) => {
       try {
-        return await CourseSkillService.createSnapshot(
+        return await CourseSkillService.createCourseSkill(
           body.courseId,
           body.skillSelections
         );
@@ -62,6 +62,24 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
       }),
     }
   )
+
+.patch(
+  "/course",
+  async ({ body, set }) => {
+    try {
+      return await CourseSkillService.updateCourseSkills(
+        body.courseId,
+        body.skills
+      );
+    } catch (error: any) {
+      set.status = 400;
+      return { error: error.message };
+    }
+  },
+  {
+    body: CourseSkillModel.UpdateCourseSkill,
+  }
+)
 
   .delete(
     "/:id",

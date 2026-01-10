@@ -30,7 +30,7 @@ export const CourseSkillService = {
         });
     },
 
-    async createSnapshot(courseId: string, skillSelections: { skillId: string, selectedRubricLevels: number }[]) {
+    async createCourseSkill(courseId: string, skillSelections: { skillId: string, selectedRubricLevels: number }[]) {
 
         const course = await prisma.course.findUnique({ where: { id: courseId } });
         if (!course) throw new Error("Course not found");
@@ -135,5 +135,61 @@ export const CourseSkillService = {
     }
   });
 },
+
+    async updateCourseSkills(
+  courseId: string,
+  skills: {
+    id: string;
+    name: string;
+    descTH?: string;
+    descENG?: string;
+    tag: string[];
+    rubrics: { level: number; descTH?: string; descENG?: string }[];
+  }[]
+) {
+
+  const course = await prisma.courseSkill.findUnique({ where: { id: courseId } });
+  if (!course) throw new Error("Course not found");
+
+
+  const normalized = skills.map((s) => ({
+    id: s.id,          
+    name: s.name,
+    descTH: s.descTH,
+    descENG: s.descENG,
+    tag: s.tag,        
+    rubrics: s.rubrics,
+  }));
+
+  const existing = await prisma.courseSkill.findFirst({
+    where: { courseNo: course.courseNo },
+  });
+
+  if (!existing) {
+
+    return await prisma.courseSkill.create({
+      data: {
+        courseNo: course.courseNo,
+        name: course.name,
+        descTH: course.descTH,
+        descENG: course.descENG,
+        skills: normalized,
+      },
+    });
+  }
+
+  const map = new Map<string, any>();
+  for (const s of existing.skills) map.set(s.id, s);
+
+  for (const s of normalized) map.set(s.id, s);
+
+  const merged = Array.from(map.values());
+
+  return await prisma.courseSkill.update({
+    where: { id: existing.id },
+    data: { skills: merged },
+  });
+},
+
 
 };
