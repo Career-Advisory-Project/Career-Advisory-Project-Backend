@@ -2,6 +2,10 @@ import { Elysia } from "elysia";
 import { courseRoute } from './modules/course';
 import { swagger } from '@elysiajs/swagger'
 import { auth } from "./modules/auth";
+<<<<<<< HEAD
+=======
+import { allCourse } from "./modules/alL_course";
+>>>>>>> 33969c129fbc98da89e0f4ce9bc0b5a1b8a49012
 import cors from "@elysiajs/cors";
 import { courseSkillController } from "./modules/skill/controller";
 
