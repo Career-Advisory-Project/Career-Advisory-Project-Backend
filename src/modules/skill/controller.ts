@@ -8,7 +8,7 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
     async ({ body, set }) => {
       try {
         return await CourseSkillService.createCourseSkill(
-          body.courseId,
+          body.courseNo,
           body.skillSelections
         );
       } catch (error: any) {
@@ -26,17 +26,17 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
 
   // GET a single course skill by ID
   .get(
-    "/:id",
-    async ({ params: { id }, set }) => {
+    "/:courseNo",
+    async ({ params: { courseNo }, set }) => {
       try {
-        return await CourseSkillService.getById(id);
+        return await CourseSkillService.getByCourseNo(courseNo);
       } catch (error: any) {
         set.status = 404;
         return { error: error.message };
       }
     },
     {
-      params: t.Object({ id: t.String() }),
+      params: t.Object({ courseNo: t.String() }),
     }
   )
 

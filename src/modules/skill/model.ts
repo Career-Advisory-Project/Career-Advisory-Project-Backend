@@ -82,7 +82,7 @@ export namespace CourseSkillModel {
     });
 
     export const CreateCourseSkillRequest = t.Object({
-    courseId: t.String(),
+    courseNo: t.String(),
     skillSelections: t.Array(t.Object({
         skillId: t.String(),
         selectedRubricLevels: t.Integer()
