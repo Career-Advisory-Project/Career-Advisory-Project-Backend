@@ -1,11 +1,11 @@
 import { Elysia, t } from 'elysia';
 import { getTeacherCourse } from './service';
-import { status } from 'elysia';
+import { courseSearch } from "./search"
 
 export const courseRoute = new Elysia({ prefix: '/course' })
     .get(
         '/:teacherID',
-        async ({ params, set }) => {
+        async ({ params }) => {
             const { teacherID } = params;
             return await getTeacherCourse(teacherID);
         },
@@ -14,4 +14,5 @@ export const courseRoute = new Elysia({ prefix: '/course' })
                 teacherID: t.String(),
             }),
         }
-  );
+    )
+    .use(courseSearch)
