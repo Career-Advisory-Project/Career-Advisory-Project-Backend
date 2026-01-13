@@ -46,7 +46,7 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
       console.log("request made to update skill rubrics:", body);
       try {
         const data = await CourseSkillService.updateSkillRubrics(
-          body.id,
+          body.courseNo,
           body.skillId,
           body.selectedRubricLevels
         );
@@ -59,7 +59,7 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
     },
     {
       body: t.Object({
-        id: t.String(),
+        courseNo: t.String(),
         skillId: t.String(),
         selectedRubricLevels: t.Integer(),
       }),
@@ -71,7 +71,7 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
     async ({ body, set }) => {
       try {
         return await CourseSkillService.updateCourseSkills(
-          body.courseId,
+          body.courseNo,
           body.skills
         );
       } catch (error: any) {
