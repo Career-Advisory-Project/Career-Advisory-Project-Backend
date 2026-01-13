@@ -7,7 +7,15 @@ import { courseSkillController } from "./modules/skill/controller";
 
 const app = new Elysia().get("/", async() => {
   return "Hello Elysia"})
-  .use(swagger())
+  .use(swagger(
+    {
+          provider: "swagger-ui",
+      path: "/swagger",
+      documentation: {
+      servers: [{ url: "/" }],
+      },
+    }
+  ))
   .use(cors({
   origin:true,
   credentials:true,
