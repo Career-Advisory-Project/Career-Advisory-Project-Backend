@@ -1,7 +1,17 @@
-FROM oven/bun:latest
+FROM oven/bun:1
+
 WORKDIR /app
-COPY package.json bun.lock ./
+
+COPY package.json .
+COPY bun.lock .
+
 RUN bun install
+
 COPY . .
+
+# Generate prisma client during build as a fallback
+RUN bunx prisma generate
+
 EXPOSE 3000
-CMD ["bun", "run", "dev"]
+
+CMD ["bun", "src/index.ts"]
