@@ -13,7 +13,7 @@ export const courseSearch = new Elysia().get(
     const results = await searchCourses(keyword)
 
     if (results.length === 0) {
-      return status(400, { ok: false, detail: "Course Not Found" })
+      return status(404, { ok: false, detail: "Course Not Found" })
     }
 
     return { ok: true, course: results }
