@@ -7,13 +7,34 @@ export const CourseSkillService = {
         });
     },
 
-    async getByCourseNo(courseNo: string) {
-        const record = await prisma.courseSkill.findFirst({
-            where: { courseNo: courseNo }
-        });
-        if (!record) throw new Error("CourseSkill record not found");
-        return record;
-    },
+  async getByCourseNo(courseNo: string) {
+
+    const course = await prisma.course.findFirst({
+      where: { courseNo }
+    });
+
+    if (!course) {
+      throw new Error("CourseSkill record not found");
+    }
+
+    const courseSkill = await prisma.courseSkill.findFirst({
+      where: { courseNo }
+    });
+
+    if (!courseSkill) {
+      return {
+        courseNo: course.courseNo,
+        name: course.name,
+        descTH: course.descTH,
+        descENG: course.descENG,
+        skills: [] as any[]
+      };
+    }
+    return {
+      ...courseSkill,
+      skills: courseSkill.skills ?? []
+    };
+  },
 
     async update(id: string, data: any) {
         return await prisma.courseSkill.update({
