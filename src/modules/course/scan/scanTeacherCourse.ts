@@ -32,10 +32,6 @@ export async function scanTeacherCourse(teacherID: string) {
       );
 
       const courseDetails = courseRes.data?.courseDetails ?? [];
-      const courseMap = new Map<string, any>();
-      courseDetails.forEach((c: any) =>
-        courseMap.set(c.courseNo, c)
-      );
 
       const foundCourseNo = new Set<string>();
       const sectionCache = new Map<string, boolean>();
@@ -87,31 +83,19 @@ export async function scanTeacherCourse(teacherID: string) {
         }
       }
 
-      const teacherCourse = Array.from(foundCourseNo).map(no => {
-        const c = courseMap.get(no);
-        return {
-          courseNo: no,
-          courseNameTH: c?.courseNameTH ?? null,
-          courseNameEN: c?.courseNameEN ?? null,
-          detailTH: c?.detailTH ?? null,
-          detailEN: c?.detailEN ?? null,
-          credit: c?.credits ?? null,
-        };
-      });
-
-      const result = {
-        teacher,
-        teacherCourse,
-      };
+      const courseNos = Array.from(foundCourseNo);
 
       if (process.env.NODE_ENV !== 'production') {
         console.log('scan finished');
         console.log('time used(ms):', Date.now() - startTime);
         console.log('section requests:', sectionRequestCount);
-        console.log('found courses:', teacherCourse.length);
+        console.log('found courses:', courseNos.length);
       }
 
-      return result;
+      return {
+        teacher,
+        courseNos,
+      };
     } catch (err: any) {
       console.error('!!!scan error', err);
       throw err;

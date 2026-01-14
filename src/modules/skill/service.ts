@@ -1,7 +1,5 @@
 import prisma from "../../db";
 
-
-
 export const CourseSkillService = {
     async getAll() {
         return await prisma.courseSkill.findMany({
@@ -121,7 +119,7 @@ export const CourseSkillService = {
         });
 
         if (!record) throw new Error("CourseSkill record not found");
-        const updatedSkills = record.skills.filter(s => s.id !== skillId);
+        const updatedSkills = record.skills.filter((s: any) => s.id !== skillId);
         return await prisma.courseSkill.update({
             where: { id: courseSkillId },
             data: {
@@ -144,7 +142,7 @@ export const CourseSkillService = {
     throw new Error("No matching rubric levels found in master skill");
   }
 
-  const updatedSkills = record.skills.map((skill) => {
+  const updatedSkills = record.skills.map((skill: any) => {
     if (skill.id === skillId) return { ...skill, rubrics: updatedRubricData };
     return skill;
   });

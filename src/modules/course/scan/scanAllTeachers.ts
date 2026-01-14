@@ -31,7 +31,7 @@ export async function scanAllTeachers() {
           firstNameEN: teacher.firstNameEN,
           lastNameTH: teacher.lastNameTH,
           lastNameEN: teacher.lastNameEN,
-          courses: result.teacherCourse,
+          courseNos: result.courseNos,
           updatedAt: new Date(),
         },
         create: {
@@ -42,7 +42,7 @@ export async function scanAllTeachers() {
           firstNameEN: teacher.firstNameEN,
           lastNameTH: teacher.lastNameTH,
           lastNameEN: teacher.lastNameEN,
-          courses: result.teacherCourse,
+          courseNos: result.courseNos,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
