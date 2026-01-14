@@ -61,7 +61,7 @@ export const CourseSkillService = {
                     where: { id: selection.skillId },
                 });
 
-                if (!skill) return null;
+                if (!skill) throw new Error(`Skill with ID ${selection.skillId} not found`);
 
                 return {
                     id: skill.id,
