@@ -1,4 +1,4 @@
-import { Context } from 'elysia'
+import { Context, PreContext } from 'elysia'
 
 type AuthContext = Context & {
     jwt: {
@@ -6,12 +6,11 @@ type AuthContext = Context & {
     }
 }
 
-export const validateUser = async (context: Context) => {
+export const validateUser = async (context: PreContext) => {
     const { jwt, cookie: { "cmu-entraid-example-token": cmuToken }, set } = context as AuthContext;
 
     console.log("Validator is running")
 
-    // 1. Check if cookie exists (use ?.value to prevent crashing)
     if (!cmuToken?.value) {
         set.status = 401
         return {
@@ -20,7 +19,6 @@ export const validateUser = async (context: Context) => {
         }
     }
 
-    // 2. Verify the token
     const profile = await jwt.verify(cmuToken.value as string)
 
     if (!profile) {

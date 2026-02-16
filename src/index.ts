@@ -6,31 +6,21 @@ import  {validateUser}  from "./modules/validator";
 import cors from "@elysiajs/cors";
 import { courseSkillController } from "./modules/skill/controller";
 
-const app = new Elysia().get("/", async() => {
-  return "Hello Elysia"})
-  .use(swagger(
-    {
-          provider: "swagger-ui",
-      path: "/swagger",
-      documentation: {
-      servers: [{ url: "/" }],
-      },
-    }
-  ))
+const app = new Elysia()
+  .use(swagger())
   .use(cors({
   origin:true,
   credentials:true,
   allowedHeaders: ['Content-Type', 'Authorization']
   }))
   .use(auth)
-  .onBeforeHandle(validateUser)
+  .onRequest(validateUser)
   .use(courseRoute)
   .use(courseSkillController)
-
-  .listen({
-    port: 3000,
-    hostname: '0.0.0.0' 
-  });
+  .get("/hi",()=>{
+    return "hello"
+  })
+  .listen(3000);
 
 
 console.log(`Test login url: ${process.env.CMU_ENTRAID_URL}`)
