@@ -1,7 +1,8 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import { listCurriculums } from "./services/getListCurriculums";
 import { getRequiredCourseList } from "./services/getRequiredCourseList";
 import { getSkillList } from "./services/getSkillList";
+import { addCoursesToCurriculum } from "./services/addCourseToCurr";
 
 // function requireAdminToken(cookie: any, headers: any) {
 //   const cookieToken = cookie["cmu-entraid-example-token"]?.value;
@@ -47,7 +48,7 @@ export const curriculumModule = new Elysia({ prefix: "/admin" })
     return await getRequiredCourseList(program, curriculumYear);
   })
 
-  .get("/curriculum/:program/:curriculum_year/skills", async ({ params, cookie, headers, set }) => {
+  .get("/curriculum/:program/:curriculum_year/skills", async ({ params, set }) => {
     const program = String(params.program).toUpperCase();
     if (program !== "CPE" && program !== "ISNE") {
         set.status = 400;
@@ -61,4 +62,29 @@ export const curriculumModule = new Elysia({ prefix: "/admin" })
     }
 
     return await getSkillList(program, curriculumYear);
+  })
+
+  .post("/curriculum/courses", async ({ body, set }) => {
+    const curriculumYear = Number(body.curriculum_year);
+    if (!Number.isFinite(curriculumYear)) {
+      set.status = 400;
+      return { message: "Invalid curriculum_year" };
+    }
+
+    const program = String(body.program).toUpperCase();
+    if (program !== "CPE" && program !== "ISNE") {
+      set.status = 400;
+      return { message: "Invalid program" };
+    }
+
+    const courses = body.courses.map((c) => String(c).trim()).filter(Boolean);
+    await addCoursesToCurriculum(program, curriculumYear, courses);
+    return { ok: true };
+  },
+  {
+    body: t.Object({
+        curriculum_year: t.String(),
+        program: t.String(),
+        courses: t.Array(t.String()),
+    }),
   });
