@@ -51,6 +51,18 @@ function collectCourseNos(groups: CpeCurriculumGroup[] | undefined | null): stri
   return out;
 }
 
+function collectRequiredCourseNos(coreAndMajorGroups: CpeCurriculumGroup[] | undefined | null): string[] {
+  const allow = new Set(["core", "major required"]);
+
+  const out: string[] = [];
+  for (const g of coreAndMajorGroups ?? []) {
+    const name = String(g.groupName ?? "").trim().toLowerCase();
+    if (!allow.has(name)) continue;
+    for (const c of g.requiredCourses ?? []) out.push(String(c.courseNo));
+  }
+  return out;
+}
+
 async function scanCurriculumFromCpe(key: CurriculumKey): Promise<CpeCurriculum> {
   if (!BASE_URL) throw new Error("Missing env: CPE_API_BASE_URL");
   if (!API_KEY) throw new Error("Missing env: CPE_API_KEY");
@@ -92,6 +104,10 @@ export async function getCurriculum(key: CurriculumKey) {
     ...collectCourseNos(curr.geGroups),
   ]);
 
+  const requiredCourseNos = uniq(
+    collectRequiredCourseNos(curr.coreAndMajorGroups)
+  );
+
   const existing = await prisma.curriculum.findFirst({
     where: {
       curriculumProgram: curr.curriculumProgram,
@@ -114,8 +130,9 @@ export async function getCurriculum(key: CurriculumKey) {
 
     allCourseNos,
     totalCourseCount: allCourseNos.length,
+    requiredCourseNos,
+    requiredCourseCount: requiredCourseNos.length,
 
-    raw: curr,
     fetchedAt: new Date(),
   };
 

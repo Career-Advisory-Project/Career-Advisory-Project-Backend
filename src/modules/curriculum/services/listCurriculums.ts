@@ -8,8 +8,8 @@ export async function listCurriculums() {
     select: {
       curriculumProgram: true,
       year: true,
-      allCourseNos: true,
-      totalCourseCount: true,
+      requiredCourseNos: true,
+      requiredCourseCount: true,
     },
     orderBy: [
       { curriculumProgram: "asc" },
@@ -20,7 +20,7 @@ export async function listCurriculums() {
   const results = [];
 
   for (const c of curriculums) {
-    const courseNos = (c.allCourseNos ?? []).map(String);
+    const courseNos = (c.requiredCourseNos ?? []).map(String);
 
     const courseSkills = courseNos.length
       ? await prisma.courseSkill.findMany({
@@ -39,7 +39,7 @@ export async function listCurriculums() {
     results.push({
       program: c.curriculumProgram,
       curriculum_year: String(c.year),
-      total_courses: c.totalCourseCount ?? courseNos.length,
+      total_courses: c.requiredCourseCount ?? courseNos.length,
       total_skills: skillIdSet.size,
     });
   }
