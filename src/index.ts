@@ -4,6 +4,7 @@ import { swagger } from '@elysiajs/swagger'
 import { auth } from "./modules/auth";
 import cors from "@elysiajs/cors";
 import { courseSkillController } from "./modules/skill/controller";
+import { curriculumModule } from "./modules/curriculum";
 
 const app = new Elysia().get("/", async() => {
   return "Hello Elysia"})
@@ -16,6 +17,7 @@ const app = new Elysia().get("/", async() => {
   .use(courseRoute)
   .use(auth)
   .use(courseSkillController)
+  .use(curriculumModule)
 
   .listen({
     port: 3000,
