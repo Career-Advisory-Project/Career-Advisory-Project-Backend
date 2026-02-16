@@ -1,49 +1,15 @@
 import prisma from "../../../db";
+import { getMergedRequiredCourseNos } from "./mergeOverride";
 
 export type SkillListItem = {
   skillID: string;
   name: string;
 };
 
-// prefer non-coop first, if not have then use coop plan
-// btw the required course are the same for coop and non-coop
-async function findCurriculumBestEffort(program: string, curriculumYear: number) {
-  const programUpper = String(program).toUpperCase();
-  const nonCoop = await prisma.curriculum.findFirst({
-    where: {
-      curriculumProgram: programUpper,
-      year: curriculumYear,
-      isCOOPPlan: false,
-    },
-    select: {
-      curriculumProgram: true,
-      year: true,
-      requiredCourseNos: true,
-    },
-  });
-  
-  if (nonCoop) return nonCoop;
-
-  const coop = await prisma.curriculum.findFirst({
-    where: {
-      curriculumProgram: programUpper,
-      year: curriculumYear,
-      isCOOPPlan: true,
-    },
-    select: {
-      curriculumProgram: true,
-      year: true,
-      requiredCourseNos: true,
-    },
-  });
-
-  return coop ?? null;
-}
-
 export async function getSkillList(program: string, curriculumYear: number) {
-  const curr = await findCurriculumBestEffort(program, curriculumYear);
+  const merged = await getMergedRequiredCourseNos(program, curriculumYear);
 
-  if (!curr) {
+  if (!merged) {
     return {
       curriculum_year: String(curriculumYear),
       program: String(program).toUpperCase(),
@@ -51,7 +17,7 @@ export async function getSkillList(program: string, curriculumYear: number) {
     };
   }
 
-  const courseNos = (curr.requiredCourseNos ?? []).map(String);
+  const courseNos = merged.courseNos;
 
   const courseSkills = courseNos.length
     ? await prisma.courseSkill.findMany({
@@ -60,9 +26,8 @@ export async function getSkillList(program: string, curriculumYear: number) {
       })
     : [];
 
-  // dedupe by skillID only (name can be duplicated im not is it possible or not)
+  // dedupe by skillID only (name can be duplicated)
   const map = new Map<string, string>(); // skillID -> name (first seen)
-
   for (const cs of courseSkills) {
     for (const s of cs.skills ?? []) {
       if (!s?.id) continue;
@@ -80,8 +45,8 @@ export async function getSkillList(program: string, curriculumYear: number) {
     .sort((a, b) => a.name.localeCompare(b.name));
 
   return {
-    curriculum_year: String(curr.year),
-    program: curr.curriculumProgram,
+    curriculum_year: String(merged.year),
+    program: merged.curriculumProgram,
     skill_list,
   };
 }

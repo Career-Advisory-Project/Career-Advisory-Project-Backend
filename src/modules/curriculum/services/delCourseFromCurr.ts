@@ -9,9 +9,11 @@ function uniq(arr: string[]) {
 }
 
 async function findCurriculumBestEffort(program: string, year: number) {
+  const prog = String(program).toUpperCase();
+
   const nonCoop = await prisma.curriculum.findFirst({
     where: {
-      curriculumProgram: program,
+      curriculumProgram: prog,
       year,
       isCOOPPlan: false,
     },
@@ -25,7 +27,7 @@ async function findCurriculumBestEffort(program: string, year: number) {
 
   const coop = await prisma.curriculum.findFirst({
     where: {
-      curriculumProgram: program,
+      curriculumProgram: prog,
       year,
       isCOOPPlan: true,
     },
@@ -86,10 +88,10 @@ export async function delCoursesFromCurriculum(
   const currentAdded = (existing.addedCourseNos ?? []).map(String);
   const currentRemoved = (existing.removedCourseNos ?? []).map(String);
 
-  // remove courses (add to removed list)
+  // add to removed list
   const newRemoved = uniq([...currentRemoved, ...courseNos]);
 
-  // if a course was previously added but now removed -> un-add it
+  // if previously added but now removed -> un-add it
   const removeSet = new Set(courseNos);
   const newAdded = currentAdded.filter((c) => !removeSet.has(String(c)));
 

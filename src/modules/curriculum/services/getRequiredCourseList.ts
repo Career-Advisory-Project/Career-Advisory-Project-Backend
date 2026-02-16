@@ -1,4 +1,5 @@
 import prisma from "../../../db";
+import { getMergedRequiredCourseNos } from "./mergeOverride";
 
 export type RequiredCourseItem = {
   courseNo: string;
@@ -32,47 +33,30 @@ function buildRequiredCreditMap(curr: any): Map<string, number> {
   return map;
 }
 
-// prefer non-coop first, if not have then use coop plan
-// btw the required course are the same for coop and non-coop
-async function findCurriculumBestEffort(program: string, curriculumYear: number) {
-  const programUpper = String(program).toUpperCase();
-  const nonCoop = await prisma.curriculum.findFirst({
-    where: {
-      curriculumProgram: programUpper,
-      year: curriculumYear,
-      isCOOPPlan: false,
-    },
-    select: {
-      curriculumProgram: true,
-      year: true,
-      requiredCourseNos: true,
-      coreAndMajorGroups: true,
-      geGroups: true,
-    },
-  });
-  
-  if (nonCoop) return nonCoop;
-
-  const coop = await prisma.curriculum.findFirst({
-    where: {
-      curriculumProgram: programUpper,
-      year: curriculumYear,
-      isCOOPPlan: true,
-    },
-    select: {
-      curriculumProgram: true,
-      year: true,
-      requiredCourseNos: true,
-      coreAndMajorGroups: true,
-      geGroups: true,
-    },
-  });
-
-  return coop ?? null;
-}
-
 export async function getRequiredCourseList(program: string, curriculumYear: number) {
-  const curr = await findCurriculumBestEffort(program, curriculumYear);
+  const merged = await getMergedRequiredCourseNos(program, curriculumYear);
+
+  if (!merged) {
+    return {
+      curriculum_year: String(curriculumYear),
+      program: String(program).toUpperCase(),
+      course_list: [],
+    };
+  }
+
+  const curr = await prisma.curriculum.findFirst({
+    where: {
+      curriculumProgram: merged.curriculumProgram,
+      year: merged.year,
+      isCOOPPlan: merged.isCOOPPlan,
+    },
+    select: {
+      curriculumProgram: true,
+      year: true,
+      coreAndMajorGroups: true,
+      geGroups: true,
+    },
+  });
 
   if (!curr) {
     return {
@@ -82,7 +66,7 @@ export async function getRequiredCourseList(program: string, curriculumYear: num
     };
   }
 
-  const courseNos = (curr.requiredCourseNos ?? []).map(String);
+  const courseNos = (merged.courseNos ?? []).map(String);
   const creditMap = buildRequiredCreditMap(curr);
 
   const courses = courseNos.length
@@ -94,15 +78,17 @@ export async function getRequiredCourseList(program: string, curriculumYear: num
 
   const nameMap = new Map(courses.map((c) => [String(c.courseNo), c.name]));
 
-  const course_list: RequiredCourseItem[] = courseNos.map((courseNo) => ({
-    courseNo,
-    name: nameMap.get(courseNo) ?? "-",
-    credit: String(creditMap.get(courseNo) ?? "-"),
-  })).sort((a, b) => Number(a.courseNo) - Number(b.courseNo));
+  const course_list: RequiredCourseItem[] = courseNos
+    .map((courseNo) => ({
+      courseNo,
+      name: nameMap.get(courseNo) ?? "-",
+      credit: String(creditMap.get(courseNo) ?? "-"),
+    }))
+    .sort((a, b) => Number(a.courseNo) - Number(b.courseNo));
 
   return {
     curriculum_year: String(curr.year),
-    program: curr.curriculumProgram,
+    program: String(curr.curriculumProgram).toUpperCase(),
     course_list,
   };
 }

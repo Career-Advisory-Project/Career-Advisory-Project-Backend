@@ -1,11 +1,11 @@
 import prisma from "../../../db";
+import { getMergedRequiredCourseNos } from "./mergeOverride";
 
 type PickedCurriculum = {
   curriculumProgram: string;
   year: number;
   isCOOPPlan: boolean;
   requiredCourseNos: string[];
-  requiredCourseCount: number;
 };
 
 export async function listCurriculums() {
@@ -15,7 +15,6 @@ export async function listCurriculums() {
       year: true,
       isCOOPPlan: true,
       requiredCourseNos: true,
-      requiredCourseCount: true,
     },
     orderBy: [
       { curriculumProgram: "asc" },
@@ -35,7 +34,6 @@ export async function listCurriculums() {
       year,
       isCOOPPlan: Boolean(c.isCOOPPlan),
       requiredCourseNos: (c.requiredCourseNos ?? []).map(String),
-      requiredCourseCount: Number(c.requiredCourseCount ?? 0),
     };
 
     const existing = picked.get(key);
@@ -49,10 +47,16 @@ export async function listCurriculums() {
     }
   }
 
-  const results = [];
+  const results: Array<{
+    program: string;
+    curriculum_year: string;
+    total_courses: number;
+    total_skills: number;
+  }> = [];
 
   for (const c of picked.values()) {
-    const courseNos = (c.requiredCourseNos ?? []).map(String);
+    const merged = await getMergedRequiredCourseNos(c.curriculumProgram, c.year);
+    const courseNos = (merged?.courseNos ?? c.requiredCourseNos ?? []).map(String);
 
     const courseSkills = courseNos.length
       ? await prisma.courseSkill.findMany({
@@ -71,7 +75,7 @@ export async function listCurriculums() {
     results.push({
       program: c.curriculumProgram,
       curriculum_year: String(c.year),
-      total_courses: c.requiredCourseCount || courseNos.length,
+      total_courses: courseNos.length,
       total_skills: skillIdSet.size,
     });
   }
