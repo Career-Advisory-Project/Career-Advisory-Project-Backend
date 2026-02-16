@@ -2,6 +2,7 @@ import { Elysia } from "elysia";
 import { courseRoute } from './modules/course';
 import { swagger } from '@elysiajs/swagger'
 import { auth } from "./modules/auth";
+import  {validateUser}  from "./modules/validator";
 import cors from "@elysiajs/cors";
 import { courseSkillController } from "./modules/skill/controller";
 
@@ -21,8 +22,9 @@ const app = new Elysia().get("/", async() => {
   credentials:true,
   allowedHeaders: ['Content-Type', 'Authorization']
   }))
-  .use(courseRoute)
   .use(auth)
+  .onBeforeHandle(validateUser)
+  .use(courseRoute)
   .use(courseSkillController)
 
   .listen({
