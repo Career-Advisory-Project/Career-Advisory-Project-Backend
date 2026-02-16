@@ -87,6 +87,7 @@ type RubricData {
   descTH  String?
   descENG String?
 }
+
 model TeacherCourse {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   teacherID String @unique
@@ -99,4 +100,54 @@ model TeacherCourse {
   courseNos   String[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Curriculum {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  curriculumProgram   String
+  year                Int
+  isCOOPPlan           Boolean
+  requiredCredits      Int
+  freeElectiveCredits  Int
+  coreAndMajorGroups   CurriculumGroup[]
+  geGroups             CurriculumGroup[]
+
+  allCourseNos         String[]
+  totalCourseCount     Int
+
+  raw                  Json?
+  fetchedAt            DateTime @default(now())
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  @@index([curriculumProgram, year, isCOOPPlan])
+}
+
+type CurriculumGroup {
+  groupName        String
+  requiredCredits  Int
+  requiredCourses  CurriculumCourse[]
+  electiveCourses  CurriculumCourse[]
+}
+
+type CurriculumCourse {
+  courseNo           String
+  recommendSemester  Int?
+  recommendYear      Int?
+  prerequisites      String[]
+  corequisite        String?
+  credits            Int
+}
+
+model CurriculumOverride {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  curriculumProgram String
+  year              Int
+  isCOOPPlan         Boolean
+
+  addedCourseNos    String[] @default([])
+  removedCourseNos  String[] @default([])
+
+  updatedAt         DateTime @updatedAt
+  createdAt         DateTime @default(now())
+  @@index([curriculumProgram, year, isCOOPPlan])
 }
