@@ -1,27 +1,9 @@
 import prisma from "../../../db";
 
-export type RequiredCourseItem = {
-  courseNo: string;
+export type SkillListItem = {
+  skillID: string;
   name: string;
-  credit: string;
 };
-
-function buildRequiredCreditMap(curr: any): Map<string, number> {
-  const allow = new Set(["core", "major required"]);
-  const map = new Map<string, number>();
-
-  for (const g of curr.coreAndMajorGroups ?? []) {
-    const name = String(g.groupName ?? "").trim().toLowerCase();
-    if (!allow.has(name)) continue;
-    for (const c of g.requiredCourses ?? []) {
-      const courseNo = String(c.courseNo);
-      const credits = Number(c.credits);
-      if (!Number.isNaN(credits)) map.set(courseNo, credits);
-    }
-  }
-
-  return map;
-}
 
 // prefer non-coop first, if not have then use coop plan
 // btw the required course are the same for coop and non-coop
@@ -37,7 +19,6 @@ async function findCurriculumBestEffort(program: string, curriculumYear: number)
       curriculumProgram: true,
       year: true,
       requiredCourseNos: true,
-      coreAndMajorGroups: true,
     },
   });
   
@@ -53,45 +34,54 @@ async function findCurriculumBestEffort(program: string, curriculumYear: number)
       curriculumProgram: true,
       year: true,
       requiredCourseNos: true,
-      coreAndMajorGroups: true,
     },
   });
 
   return coop ?? null;
 }
 
-export async function getRequiredCourseList(program: string, curriculumYear: number) {
+export async function getSkillList(program: string, curriculumYear: number) {
   const curr = await findCurriculumBestEffort(program, curriculumYear);
 
   if (!curr) {
     return {
       curriculum_year: String(curriculumYear),
       program: String(program).toUpperCase(),
-      course_list: [],
+      skill_list: [],
     };
   }
 
   const courseNos = (curr.requiredCourseNos ?? []).map(String);
-  const creditMap = buildRequiredCreditMap(curr);
 
-  const courses = courseNos.length
-    ? await prisma.course.findMany({
+  const courseSkills = courseNos.length
+    ? await prisma.courseSkill.findMany({
         where: { courseNo: { in: courseNos } },
-        select: { courseNo: true, name: true },
+        select: { skills: true },
       })
     : [];
 
-  const nameMap = new Map(courses.map((c) => [String(c.courseNo), c.name]));
+  // dedupe by skillID only (name can be duplicated im not is it possible or not)
+  const map = new Map<string, string>(); // skillID -> name (first seen)
 
-  const course_list: RequiredCourseItem[] = courseNos.map((courseNo) => ({
-    courseNo,
-    name: nameMap.get(courseNo) ?? "-",
-    credit: String(creditMap.get(courseNo) ?? "-"),
-  }));
+  for (const cs of courseSkills) {
+    for (const s of cs.skills ?? []) {
+      if (!s?.id) continue;
+
+      const skillID = String(s.id);
+      if (map.has(skillID)) continue;
+
+      const name = String(s.name ?? "-");
+      map.set(skillID, name);
+    }
+  }
+
+  const skill_list: SkillListItem[] = Array.from(map.entries())
+    .map(([skillID, name]) => ({ skillID, name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return {
     curriculum_year: String(curr.year),
     program: curr.curriculumProgram,
-    course_list,
+    skill_list,
   };
 }

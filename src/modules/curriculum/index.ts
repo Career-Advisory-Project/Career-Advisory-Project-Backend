@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { listCurriculums } from "./services/getListCurriculums";
 import { getRequiredCourseList } from "./services/getRequiredCourseList";
+import { getSkillList } from "./services/getSkillList";
 
 // function requireAdminToken(cookie: any, headers: any) {
 //   const cookieToken = cookie["cmu-entraid-example-token"]?.value;
@@ -44,4 +45,20 @@ export const curriculumModule = new Elysia({ prefix: "/admin" })
     }
 
     return await getRequiredCourseList(program, curriculumYear);
+  })
+
+  .get("/curriculum/:program/:curriculum_year/skills", async ({ params, cookie, headers, set }) => {
+    const program = String(params.program).toUpperCase();
+    if (program !== "CPE" && program !== "ISNE") {
+        set.status = 400;
+        return { message: "Invalid program" };
+    }
+
+    const curriculumYear = Number(params.curriculum_year);
+    if (!Number.isFinite(curriculumYear)) {
+        set.status = 400;
+        return { message: "Invalid curriculum_year" };
+    }
+
+    return await getSkillList(program, curriculumYear);
   });
