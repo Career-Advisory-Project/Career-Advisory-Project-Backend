@@ -74,20 +74,21 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
     }
   )
 
-  .delete(
-    "/:id/skills/:skillId",
-    async ({ params: { id, skillId }, set }) => {
-      try {
-        return await CourseSkillService.removeSkillFromCourse(id, skillId);
-      } catch (error: any) {
-        set.status = 400;
-        return { error: error.message };
-      }
-    },
-    {
-      params: t.Object({
-        id: t.String(),
-        skillId: t.String(),
-      }),
+.delete(
+  "/",
+  async ({ body, set }) => {
+    try {
+      return await CourseSkillService.removeSkillFromCourse(
+        body.courseNo,
+        body.skillID
+      );
+    } catch (error: any) {
+      set.status = 400;
+      return { error: error.message };
     }
-  );
+  },
+  {
+      body: CourseSkillModel.RemoveSkillInCourse,
+  }
+)
+;

@@ -87,4 +87,9 @@ export namespace CourseSkillModel {
     courseNo: t.String(),
     skillID:  t.String()
 });
+
+    export const RemoveSkillInCourse = t.Object({
+      courseNo: t.String(),
+      skillID: t.String()
+    })
 }

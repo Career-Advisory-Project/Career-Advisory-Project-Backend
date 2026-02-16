@@ -116,20 +116,32 @@ export const CourseSkillService = {
 },
 
 
-    async removeSkillFromCourse(courseSkillId: string, skillId: string) {
-        const record = await prisma.courseSkill.findUnique({
-            where: { id: courseSkillId }
-        });
+    async removeSkillFromCourse(courseNo: string, skillID: string) {
+  const existing = await prisma.courseSkill.findFirst({
+    where: { courseNo }
+  });
+  if (!existing) {
+    throw new Error("Course not found");
+  }
 
-        if (!record) throw new Error("CourseSkill record not found");
-        const updatedSkills = record.skills.filter((s: any) => s.id !== skillId);
-        return await prisma.courseSkill.update({
-            where: { id: courseSkillId },
-            data: {
-                skills: { set: updatedSkills }
-            }
-        });
-    },
+  const skillExists = existing.skills.some(
+    s => s.id === skillID
+  );
+
+  if (!skillExists) {
+    throw new Error("Skill not found in this course");
+  }
+  const updatedSkills = existing.skills.filter(
+    s => s.id !== skillID
+  );
+  return await prisma.courseSkill.update({
+    where: { id: existing.id },
+    data: {
+      skills: updatedSkills
+    }
+  });
+}
+,
 
     async updateCourseSkills(
   courseNo: string,
