@@ -75,7 +75,7 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
   )
 
 .delete(
-  "/",
+  "/delete",
   async ({ body, set }) => {
     try {
       return await CourseSkillService.removeSkillFromCourse(
