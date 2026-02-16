@@ -13,6 +13,15 @@ function buildRequiredCreditMap(curr: any): Map<string, number> {
   for (const g of curr.coreAndMajorGroups ?? []) {
     const name = String(g.groupName ?? "").trim().toLowerCase();
     if (!allow.has(name)) continue;
+
+    for (const c of g.requiredCourses ?? []) {
+      const courseNo = String(c.courseNo);
+      const credits = Number(c.credits);
+      if (!Number.isNaN(credits)) map.set(courseNo, credits);
+    }
+  }
+
+  for (const g of curr.geGroups ?? []) {
     for (const c of g.requiredCourses ?? []) {
       const courseNo = String(c.courseNo);
       const credits = Number(c.credits);
@@ -38,6 +47,7 @@ async function findCurriculumBestEffort(program: string, curriculumYear: number)
       year: true,
       requiredCourseNos: true,
       coreAndMajorGroups: true,
+      geGroups: true,
     },
   });
   
@@ -54,6 +64,7 @@ async function findCurriculumBestEffort(program: string, curriculumYear: number)
       year: true,
       requiredCourseNos: true,
       coreAndMajorGroups: true,
+      geGroups: true,
     },
   });
 
@@ -87,7 +98,7 @@ export async function getRequiredCourseList(program: string, curriculumYear: num
     courseNo,
     name: nameMap.get(courseNo) ?? "-",
     credit: String(creditMap.get(courseNo) ?? "-"),
-  }));
+  })).sort((a, b) => Number(a.courseNo) - Number(b.courseNo));
 
   return {
     curriculum_year: String(curr.year),

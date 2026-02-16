@@ -51,15 +51,23 @@ function collectCourseNos(groups: CpeCurriculumGroup[] | undefined | null): stri
   return out;
 }
 
-function collectRequiredCourseNos(coreAndMajorGroups: CpeCurriculumGroup[] | undefined | null): string[] {
+function collectRequiredCourseNos(
+  coreAndMajorGroups: CpeCurriculumGroup[] | undefined | null,
+  geGroups: CpeCurriculumGroup[] | undefined | null
+): string[] {
   const allow = new Set(["core", "major required"]);
-
   const out: string[] = [];
+
   for (const g of coreAndMajorGroups ?? []) {
     const name = String(g.groupName ?? "").trim().toLowerCase();
     if (!allow.has(name)) continue;
     for (const c of g.requiredCourses ?? []) out.push(String(c.courseNo));
   }
+
+  for (const g of geGroups ?? []) {
+    for (const c of g.requiredCourses ?? []) out.push(String(c.courseNo));
+  }
+
   return out;
 }
 
@@ -105,7 +113,7 @@ export async function getCurriculum(key: CurriculumKey) {
   ]);
 
   const requiredCourseNos = uniq(
-    collectRequiredCourseNos(curr.coreAndMajorGroups)
+    collectRequiredCourseNos(curr.coreAndMajorGroups, curr.geGroups)
   );
 
   const existing = await prisma.curriculum.findFirst({
