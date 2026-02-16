@@ -6,10 +6,9 @@ type AuthContext = Context & {
     }
 }
 
-export const validateUser = async (context: PreContext) => {
+export const validateUser = async (context: Context) => {
     const { jwt, cookie: { "cmu-entraid-example-token": cmuToken }, set } = context as AuthContext;
 
-    console.log("Validator is running")
 
     if (!cmuToken?.value) {
         set.status = 401

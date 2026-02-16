@@ -14,7 +14,7 @@ const app = new Elysia()
   allowedHeaders: ['Content-Type', 'Authorization']
   }))
   .use(auth)
-  .onRequest(validateUser)
+  .onBeforeHandle (validateUser)
   .use(courseRoute)
   .use(courseSkillController)
   .get("/hi",()=>{
