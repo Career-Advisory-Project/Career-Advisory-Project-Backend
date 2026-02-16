@@ -3,6 +3,7 @@ import { listCurriculums } from "./services/getListCurriculums";
 import { getRequiredCourseList } from "./services/getRequiredCourseList";
 import { getSkillList } from "./services/getSkillList";
 import { addCoursesToCurriculum } from "./services/addCourseToCurr";
+import prisma from "../../db";
 
 // function requireAdminToken(cookie: any, headers: any) {
 //   const cookieToken = cookie["cmu-entraid-example-token"]?.value;
@@ -78,6 +79,24 @@ export const curriculumModule = new Elysia({ prefix: "/admin" })
     }
 
     const courses = body.courses.map((c) => String(c).trim()).filter(Boolean);
+    if (courses.length === 0) return { ok: true };
+
+    const found = await prisma.course.findMany({
+        where: { courseNo: { in: courses } },
+        select: { courseNo: true },
+    });
+
+    const foundSet = new Set(found.map((x) => String(x.courseNo)));
+    const unknown = courses.filter((c) => !foundSet.has(c));
+
+    if (unknown.length > 0) {
+        set.status = 400;
+            return {
+            message: "Unknown courseNo",
+            unknown_courses: unknown,
+        };
+    } 
+
     await addCoursesToCurriculum(program, curriculumYear, courses);
     return { ok: true };
   },
