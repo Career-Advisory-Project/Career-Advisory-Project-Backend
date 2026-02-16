@@ -3,12 +3,14 @@ import { t } from "elysia";
 export namespace CourseSkillModel {
 
     export const Rubric = t.Object({
+        grade: t.String(),
         level: t.Integer(),
         descTH: t.Optional(t.String()),
         descENG: t.Optional(t.String()),
     });
 
     export const RubricData = t.Object({
+        grade: t.String(),
         level: t.Integer(),
         descTH: t.Optional(t.String()),
         descENG: t.Optional(t.String()),
@@ -83,9 +85,6 @@ export namespace CourseSkillModel {
 
     export const CreateCourseSkillRequest = t.Object({
     courseNo: t.String(),
-    skillSelections: t.Array(t.Object({
-        skillId: t.String(),
-        selectedRubricLevels: t.Integer()
-    }))
+    skillID:  t.String()
 });
 }
