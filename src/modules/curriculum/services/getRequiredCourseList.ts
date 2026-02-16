@@ -29,7 +29,7 @@ export async function getRequiredCourseList(program: string, curriculumYear: num
     where: {
       curriculumProgram: program,
       year: curriculumYear,
-      isCOOPPlan: false,
+      //isCOOPPlan: false,
     },
     select: {
       curriculumProgram: true,
