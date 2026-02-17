@@ -5,7 +5,7 @@ import { auth } from "./modules/auth";
 import  {validateUser}  from "./modules/validator";
 import cors from "@elysiajs/cors";
 import { courseSkillController } from "./modules/skill/controller";
-
+import { dashboardRoute } from "./modules/dashboard";
 const app = new Elysia()
   .use(swagger())
   .use(cors({
@@ -14,7 +14,8 @@ const app = new Elysia()
   allowedHeaders: ['Content-Type', 'Authorization']
   }))
   .use(auth)
-  .onBeforeHandle (validateUser)
+  // .onBeforeHandle (validateUser)
+  .use(dashboardRoute)
   .use(courseRoute)
   .use(courseSkillController)
   .get("/hi",()=>{
