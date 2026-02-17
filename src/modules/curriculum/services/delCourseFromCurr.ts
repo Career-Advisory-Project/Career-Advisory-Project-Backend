@@ -15,12 +15,13 @@ async function findCurriculumBestEffort(program: string, year: number) {
     where: {
       curriculumProgram: prog,
       year,
-      isCOOPPlan: false,
+      isCOOPPlan: false
     },
     select: {
       curriculumProgram: true,
       year: true,
       isCOOPPlan: true,
+      requiredCourseNos: true,
     },
   });
   if (nonCoop) return nonCoop;
@@ -29,12 +30,13 @@ async function findCurriculumBestEffort(program: string, year: number) {
     where: {
       curriculumProgram: prog,
       year,
-      isCOOPPlan: true,
+      isCOOPPlan: true
     },
     select: {
       curriculumProgram: true,
       year: true,
       isCOOPPlan: true,
+      requiredCourseNos: true,
     },
   });
 
@@ -52,11 +54,17 @@ export async function delCoursesFromCurriculum(
   const courseNos = uniq(courses.map(normalizeCourseNo).filter(Boolean));
   if (courseNos.length === 0) return { ok: true };
 
-  // decide which curriculum version we attach override to
   const base = await findCurriculumBestEffort(prog, year);
   if (!base) {
     throw new Error(`Curriculum not found: ${prog} ${year}`);
   }
+
+  const baseSet = new Set(
+    (base.requiredCourseNos ?? []).map(normalizeCourseNo).filter(Boolean)
+  );
+
+  const toRemove = courseNos.filter((c) => baseSet.has(c));
+  const toUnadd = courseNos.filter((c) => !baseSet.has(c));
 
   const overrideWhere = {
     curriculumProgram: prog,
@@ -73,27 +81,31 @@ export async function delCoursesFromCurriculum(
     },
   });
 
-  // no override yet -> create one with removedCourseNos
+  const currentAdded = (existing?.addedCourseNos ?? []).map(normalizeCourseNo).filter(Boolean);
+  const currentRemoved = (existing?.removedCourseNos ?? []).map(normalizeCourseNo).filter(Boolean);
+
+  // removed = currentRemoved + toRemove
+  const newRemoved = uniq([...currentRemoved, ...toRemove]);
+
+  // added = currentAdded - toUnadd
+  const unaddSet = new Set(toUnadd);
+  const newAdded = currentAdded.filter((c) => !unaddSet.has(c));
+
   if (!existing) {
     await prisma.curriculumOverride.create({
       data: {
         ...overrideWhere,
         addedCourseNos: [],
-        removedCourseNos: courseNos,
+        removedCourseNos: newRemoved,
       },
     });
     return { ok: true };
   }
 
-  const currentAdded = (existing.addedCourseNos ?? []).map(String);
-  const currentRemoved = (existing.removedCourseNos ?? []).map(String);
-
-  // add to removed list
-  const newRemoved = uniq([...currentRemoved, ...courseNos]);
-
-  // if previously added but now removed -> un-add it
-  const removeSet = new Set(courseNos);
-  const newAdded = currentAdded.filter((c) => !removeSet.has(String(c)));
+  if (newAdded.length === 0 && newRemoved.length === 0) {
+    await prisma.curriculumOverride.delete({ where: { id: existing.id } });
+    return { ok: true };
+  }
 
   await prisma.curriculumOverride.update({
     where: { id: existing.id },
