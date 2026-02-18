@@ -7,11 +7,11 @@ export class Dashboard {
 
     public static getDashboardCourse = async (cmuitaccount: string): Promise<DashboardModel.courseListType | null> => {
         const dashboardUser = await prisma.dashboard.findFirst({
-            where:{
-                cmuitaccount:cmuitaccount
+            where: {
+                cmuitaccount: cmuitaccount
             }
         })
-        if(!dashboardUser) return null
+        if (!dashboardUser) return null
         // console.log(dashboardUser.coursesNoList)
         return dashboardUser.coursesNoList
     }
@@ -53,12 +53,12 @@ export class Dashboard {
                 }
             }
         })
-        if(courseNoList.length !== courseToAdd.length){
-            const courseToAddNo = courseToAdd.map((item)=>{
+        if (courseNoList.length !== courseToAdd.length) {
+            const courseToAddNo = courseToAdd.map((item) => {
                 return item.courseNo
             });
-            const courseNotFound = this.getDifference(courseNoList,courseToAddNo);
-            const exception = new DashboardModel.CourseNotFoundError("Course not found",courseNotFound);
+            const courseNotFound = this.getDifference(courseNoList, courseToAddNo);
+            const exception = new DashboardModel.CourseNotFoundError("Course not found", courseNotFound);
             throw exception;
         }
         const courseToAddData: DashboardModel.courseSchemaType[] = courseToAdd.map((courseItem) => {
@@ -94,7 +94,7 @@ export class Dashboard {
                     },
                 })
             }
-            catch(error:any){
+            catch (error: any) {
                 throw error
             }
         }
@@ -122,7 +122,24 @@ export class Dashboard {
         }
     }
 
-    public static removeCouseFromDashboard = async ({ cmuitaccount, courseNoList }: DashboardModel.courseBodyParamType) => {
+    public static removeCouseFromDashboard = async ({ cmuitaccount, courseNoList }: DashboardModel.courseBodyParamType): Promise<DashboardModel.courseSchemaType[] | null> => {
+        const updatedUser = await prisma.dashboard.update({
+            where: {
+                cmuitaccount: cmuitaccount,
+            },
+            data: {
+                coursesNoList: {
+                    deleteMany: {
+                        where: {
+                            courseNo: {
+                                in:courseNoList
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        return updatedUser.coursesNoList;
 
     }
 
