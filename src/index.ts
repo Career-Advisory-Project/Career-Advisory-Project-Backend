@@ -2,6 +2,7 @@ import { Elysia } from "elysia";
 import { courseRoute } from './modules/course';
 import { swagger } from '@elysiajs/swagger'
 import { auth } from "./modules/auth";
+import { allCourse } from "./modules/all_course";
 import  {validateUser}  from "./modules/validator";
 import cors from "@elysiajs/cors";
 import { courseSkillController } from "./modules/skill/controller";
@@ -15,12 +16,10 @@ const app = new Elysia()
   }))
   .use(auth)
   // .onBeforeHandle (validateUser)
+  .use(allCourse)
   .use(dashboardRoute)
   .use(courseRoute)
   .use(courseSkillController)
-  .get("/hi",()=>{
-    return "hello"
-  })
   .listen(3000);
 
 
