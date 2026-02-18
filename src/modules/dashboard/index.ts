@@ -58,9 +58,12 @@ export const dashboardRoute = new Elysia()
     .delete("/dashboard", async ({ body, set }) => {
         try {
             const removedCourse = await Dashboard.removeCouseFromDashboard({ cmuitaccount: body.cmuitaccount, courseNoList: body.coursesNoList })
+            const removeNoList = removedCourse?.map((item)=>{
+                return item.courseNo
+            })
             return{
                 ok:true,
-                message:"courses removed: " + removedCourse
+                message:"courses remain: " + removeNoList
             }
         }
         catch (error: unknown) {
