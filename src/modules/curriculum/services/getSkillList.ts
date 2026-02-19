@@ -4,6 +4,7 @@ import { getMergedRequiredCourseNos } from "./mergeOverride";
 export type SkillListItem = {
   skillID: string;
   name: string;
+  max_level: number;
 };
 
 export async function getSkillList(program: string, curriculumYear: number) {
@@ -13,7 +14,7 @@ export async function getSkillList(program: string, curriculumYear: number) {
     return {
       curriculum_year: String(curriculumYear),
       program: String(program).toUpperCase(),
-      skill_list: [],
+      skill_list: [] as SkillListItem[],
     };
   }
 
@@ -41,7 +42,11 @@ export async function getSkillList(program: string, curriculumYear: number) {
   }
 
   const skill_list: SkillListItem[] = Array.from(map.entries())
-    .map(([skillID, name]) => ({ skillID, name }))
+    .map(([skillID, name]) => ({
+      skillID,
+      name,
+      max_level: 1,
+    }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
   return {
