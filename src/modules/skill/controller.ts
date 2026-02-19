@@ -9,7 +9,8 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
       try {
         return await CourseSkillService.createCourseSkill(
           body.courseNo,
-          body.skillID
+          body.skillID,
+          body.rubrics
         );
       } catch (error: any) {
         set.status = 400;
@@ -28,6 +29,7 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
   .get(
     "/:courseNo",
     async ({ params: { courseNo }, set }) => {
+      console.log("Hello")
       try {
         return await CourseSkillService.getByCourseNo(courseNo);
       } catch (error: any) {

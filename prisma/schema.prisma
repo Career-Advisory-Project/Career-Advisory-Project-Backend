@@ -25,7 +25,6 @@ model Course {
 }
 
 type Rubric {
-  grade String
   level   Int
   descTH  String?
   descENG String?
