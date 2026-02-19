@@ -43,22 +43,24 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
   )
 
   .patch(
-    "/course",
-    async ({ body, set }) => {
-      try {
-        return await CourseSkillService.updateCourseSkills(
-          body.courseNo,
-          body.skills
-        );
-      } catch (error: any) {
-        set.status = 400;
-        return { error: error.message };
-      }
-    },
-    {
-      body: CourseSkillModel.UpdateCourseSkill,
+  "/",
+  async ({ body, set }) => {
+    try {
+      return await CourseSkillService.updateCourseSkillRubrics(
+        body.courseNo,
+        body.skillID,
+        body.rubrics
+      );
+    } catch (error: any) {
+      set.status = 400;
+      return { error: error.message };
     }
-  )
+  },
+  {
+    body: CourseSkillModel.UpdateCourseSkillRubrics,
+  }
+)
+
 
   .delete(
     "/:id",

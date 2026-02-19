@@ -152,60 +152,53 @@ export const CourseSkillService = {
 }
 ,
 
-    async updateCourseSkills(
+  async updateCourseSkillRubrics(
   courseNo: string,
-  skills: {
-    id: string;
-    name: string;
-    descTH?: string;
-    descENG?: string;
-    tag: string[];
-    rubrics: { grade: string, level: number; descTH?: string; descENG?: string }[];
-  }[]
+  skillID: string,
+  rubrics: { grade: string; level: number }[]
 ) {
+  const course = await prisma.courseSkill.findFirst({
+    where: { courseNo }
+  });
 
-  const course = await prisma.courseSkill.findFirst({ where: { courseNo: courseNo } });
   if (!course) throw new Error("Course not found");
 
+  const skillIndex = course.skills.findIndex(
+    (s: any) => s.id === skillID
+  );
 
-  const normalized = skills.map((s) => ({
-    id: s.id,          
-    name: s.name,
-    descTH: s.descTH,
-    descENG: s.descENG,
-    tag: s.tag,        
-    rubrics: s.rubrics,
-  }));
-
-  const existing = await prisma.courseSkill.findFirst({
-    where: { courseNo: course.courseNo },
-  });
-
-  if (!existing) {
-
-    return await prisma.courseSkill.create({
-      data: {
-        courseNo: course.courseNo,
-        name: course.name,
-        descTH: course.descTH,
-        descENG: course.descENG,
-        skills: normalized,
-      },
-    });
+  if (skillIndex === -1) {
+    throw new Error("Skill not found in this course");
   }
 
-  const map = new Map<string, any>();
-  for (const s of existing.skills) map.set(s.id, s);
+  const targetSkill = course.skills[skillIndex];
 
-  for (const s of normalized) map.set(s.id, s);
+  const updatedRubrics = targetSkill.rubrics.map((r: any) => {
+    const match = rubrics.find(
+      (input) => input.grade === r.grade
+    );
 
-  const merged = Array.from(map.values());
+    if (!match) return r; 
+
+    return {
+      ...r,
+      level: Number(match.level)
+    };
+  });
+
+  const updatedSkills = [...course.skills];
+  updatedSkills[skillIndex] = {
+    ...targetSkill,
+    rubrics: updatedRubrics
+  };
 
   return await prisma.courseSkill.update({
-    where: { id: existing.id },
-    data: { skills: merged },
+    where: { id: course.id },
+    data: {
+      skills: updatedSkills
+    }
   });
-},
+}
 
 
 };
