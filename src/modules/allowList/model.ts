@@ -15,7 +15,7 @@ export namespace UserManagerModel {
     }
     export const getUserQuery = t.Object({
         role: t.String(Role),
-        filter: t.Nullable(t.String())
+        filter: t.Optional(t.String())
     })
 
     export const AddUserBody = t.Object(
@@ -27,7 +27,7 @@ export namespace UserManagerModel {
 
     export const DeleteUserBody = t.Object(
         {
-            cmu_emails: t.String(),
+            cmuitaccount: t.Array(t.String()),
         }
     )
 }

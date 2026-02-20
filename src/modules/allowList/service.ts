@@ -6,11 +6,52 @@ export class UserManager {
         return regex.test(cmuitaccount.trim());
     }
     public static getBySubstring = async (substr: string, role: string) => {
+        try {
+            const search = substr.trim();
+            const users = await prisma.userList.findMany({
+                where: {
+                    role: role,
 
+                    ...(search !== "" && {
+                        OR: [
+                            { fname: { contains: search, mode: 'insensitive' } },
+                            { lname: { contains: search, mode: 'insensitive' } },
+                            { cmuitaccount: { contains: search, mode: 'insensitive' } }
+                        ]
+                    })
+                },
+
+                orderBy: {
+                    fname: 'asc'
+                }
+                , select: { cmuitaccount: true, fname: true, lname: true }
+            });
+
+            return users;
+
+        } catch (error) {
+            console.error("Error searching users:", error);
+            throw new Error("Failed to search users.");
+        }
     }
 
     public static getUser = async (role: string) => {
+        try {
+            const users = await prisma.userList.findMany({
+                where: {
+                    role: role,
+                },
+                orderBy: {
+                    fname: 'asc'
+                }
+                , select: { cmuitaccount: true, fname: true, lname: true }
+            });
+            return users;
 
+        } catch (error) {
+            console.error("Error searching users:", error);
+            throw new Error("Failed to search users.");
+        }
     }
 
     public static addUserToList = async (cmuitaccount: string[], role: string) => {
@@ -25,7 +66,7 @@ export class UserManager {
             }
         }
         if (invalidEmails.length > 0) {
-            throw new UserManagerModel.EmailNotValidError("There are invalid email in the list",invalidEmails)
+            throw new UserManagerModel.EmailNotValidError("There are invalid email in the list", invalidEmails)
         }
         else {
             try {
@@ -33,7 +74,7 @@ export class UserManager {
                     where: {
                         cmuitaccount: { in: validEmails }
                     },
-                    select: { cmuitaccount: true } 
+                    select: { cmuitaccount: true }
                 });
 
                 const existingEmails = existingUsers.map(user => user.cmuitaccount);
@@ -59,13 +100,26 @@ export class UserManager {
                 })
             }
             catch (error: unknown) {
-                console.log(error)
+                console.log("Error adding user: ", error)
                 throw error
             }
         }
     }
-
-    public static validateUserEmail = async (cmuitaccount: string) => {
-
+    public static removeUserFromList = async (cmuitaccount: string[]) => {
+        try {
+            const result = await prisma.userList.deleteMany({
+                where: {
+                    cmuitaccount: {
+                        in: cmuitaccount
+                    }
+                }
+            });
+            return result
+        }
+        catch (error) {
+            console.error("Database error during user deletion:", error);
+            throw new Error("Failed to delete users from the database.");
+        }
     }
+
 }
