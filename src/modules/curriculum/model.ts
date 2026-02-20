@@ -14,15 +14,10 @@ export function normalizeKey(key: CurriculumKey): CurriculumKey {
   };
 }
 
-export function uniq(arr: string[]): string[] {
+export function uniq(arr: string[]) {
   return Array.from(new Set(arr));
 }
 
-export function difference(base: string[], remove: string[]): string[] {
-  const s = new Set(remove);
-  return base.filter((x) => !s.has(x));
-}
-
-export function union(a: string[], b: string[]): string[] {
-  return uniq([...a, ...b]);
+export function normalizeCourseNo(x: string) {
+  return String(x ?? "").trim();
 }

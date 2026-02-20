@@ -1,11 +1,6 @@
 import prisma from "../../../db";
-
-function normalizeCourseNo(x: string) {
-  return String(x ?? "").trim();
-}
-function uniq(arr: string[]) {
-  return Array.from(new Set(arr));
-}
+import { uniq } from "../model";
+import { normalizeCourseNo } from "../model";
 
 async function findCurriculumBestEffort(program: string, year: number) {
   const prog = String(program).toUpperCase();

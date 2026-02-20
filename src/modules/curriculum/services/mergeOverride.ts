@@ -1,12 +1,6 @@
 import prisma from "../../../db";
-
-function normalizeCourseNo(x: string) {
-  return String(x ?? "").trim();
-}
-
-function uniq(arr: string[]) {
-  return Array.from(new Set(arr));
-}
+import { uniq } from "../model";
+import { normalizeCourseNo } from "../model";
 
 // sort courseNo in ascending order
 // if both are number then compare as number, otherwise compare as string
