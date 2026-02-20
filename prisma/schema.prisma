@@ -108,9 +108,20 @@ type CourseDashboardItem {
 }
 
 model Dashboard {
-  id  String   @id @default(auto()) @map("_id") @db.ObjectId
-  cmuitaccount String @unique
+  id            String                @id @default(auto()) @map("_id") @db.ObjectId
+  cmuitaccount  String                @unique
   coursesNoList CourseDashboardItem[]
-  updatedAt DateTime @default(now())
-  createdAt DateTime @default(now())
+  updatedAt     DateTime              @default(now())
+  createdAt     DateTime              @default(now())
 }
+
+model UserList {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  cmuitaccount String   @unique
+  fname        String
+  lname        String
+  role         String
+  updatedAt    DateTime @default(now())
+  createdAt    DateTime @default(now())
+}
+
