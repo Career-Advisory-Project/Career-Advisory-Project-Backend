@@ -102,4 +102,8 @@ export namespace CourseSkillModel {
       courseNo: t.String(),
       skillID: t.String()
     })
+    export const MaxLevelSkillCourse = t.Object({
+        courseNolist: t.Array(t.String())
+    });
+
 }

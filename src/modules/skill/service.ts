@@ -6,7 +6,59 @@ export const CourseSkillService = {
             orderBy: { createdAt: 'desc' }
         });
     },
-    
+    async getAllSkill() {
+      return await prisma.skill.findMany();
+    },
+async getMaxLevel(courseNolist: string[]) {
+  const courses = await prisma.courseSkill.findMany({
+    where: {
+      courseNo: {
+        in: courseNolist
+      }
+    }
+  });
+
+  if (!courses.length) {
+    throw new Error("No courses found");
+  }
+
+  const skillMap = new Map<string, any>();
+
+  for (const course of courses) {
+    for (const skill of course.skills || []) {
+
+      if (!skillMap.has(skill.id)) {
+        skillMap.set(skill.id, {
+          skillID: skill.id,
+          skillName: skill.name,
+          levels: []
+        });
+      }
+
+      const entry = skillMap.get(skill.id);
+
+      for (const rubric of skill.rubrics || []) {
+        entry.levels.push(Number(rubric.level));
+      }
+    }
+  }
+
+  const result = Array.from(skillMap.values()).map((skill) => {
+    const maxLevel =
+      skill.levels.length > 0
+        ? Math.max(...skill.levels)
+        : 0;
+
+    return {
+      skillID: skill.skillID,
+      skillName: skill.skillName,
+      maxLevel
+    };
+  });
+
+  return result;
+}
+,
 
       async getByCourseNo(courseNo: string) {
 

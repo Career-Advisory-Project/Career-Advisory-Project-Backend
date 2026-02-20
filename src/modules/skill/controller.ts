@@ -24,6 +24,24 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
   .get("/", async () => {
     return await CourseSkillService.getAll();
   })
+  .get("/allskill", async () => {
+    return await CourseSkillService.getAllSkill();
+  })
+
+  .get("/max",async({body,set}) =>{
+          try {
+        return await CourseSkillService.getMaxLevel(
+          body.courseNolist
+        );
+      } catch (error: any) {
+        set.status = 400;
+        return { error: error.message };
+      }
+    },
+    {
+      body: CourseSkillModel.MaxLevelSkillCourse
+    }
+  )
 
   // GET a single course skill by ID
   .get(
