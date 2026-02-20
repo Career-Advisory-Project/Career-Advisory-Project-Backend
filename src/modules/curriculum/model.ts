@@ -1,3 +1,5 @@
+import prisma from "../../db";
+
 export type CurriculumProgram = "CPE" | "ISNE";
 
 export type CurriculumKey = {
@@ -20,4 +22,18 @@ export function uniq(arr: string[]) {
 
 export function normalizeCourseNo(x: string) {
   return String(x ?? "").trim();
+}
+
+export async function curriculumYearExists(program: string, year: number) {
+  const prog = String(program).toUpperCase();
+
+  const found = await prisma.curriculum.findFirst({
+    where: {
+      curriculumProgram: prog,
+      year,
+    },
+    select: { id: true },
+  });
+
+  return !!found;
 }

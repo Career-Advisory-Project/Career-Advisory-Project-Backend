@@ -5,36 +5,14 @@ import { getSkillList } from "./services/getSkillList";
 import { addCoursesToCurriculum } from "./services/addCourseToCurr";
 import prisma from "../../db";
 import { delCoursesFromCurriculum } from "./services/delCourseFromCurr";
-
-// function requireAdminToken(cookie: any, headers: any) {
-//   const cookieToken = cookie["cmu-entraid-example-token"]?.value;
-
-//   const testToken =
-//     process.env.NODE_ENV !== "production"
-//       ? headers["x-dev-token"]
-//       : undefined;
-
-//   return cookieToken ?? testToken;
-// }
+import { curriculumYearExists } from "./model";
 
 export const curriculumModule = new Elysia({ prefix: "/admin" })
-  .get("/curriculum", async ({ cookie, set , headers }) => {
-    // const token = requireAdminToken(cookie, headers);
-    // if (!token) {
-    //     set.status = 401;
-    //     return { message: "Unauthorized" };
-    // }
-
+  .get("/curriculum", async () => {
     return await listCurriculums();
   })
 
-  .get("/curriculum/:program/:curriculum_year/courses", async ({ params, cookie, headers, set }) => {
-    // const token = requireAdminToken(cookie, headers);
-    // if (!token) {
-    //     set.status = 401;
-    //     return { message: "Unauthorized" };
-    // }
-
+  .get("/curriculum/:program/:curriculum_year/courses", async ({ params, set }) => {
     const program = String(params.program).toUpperCase();
     if (program !== "CPE" && program !== "ISNE") {
         set.status = 400;
@@ -43,8 +21,14 @@ export const curriculumModule = new Elysia({ prefix: "/admin" })
 
     const curriculumYear = Number(params.curriculum_year);
     if (!Number.isFinite(curriculumYear)) {
-        set.status = 400;
-        return { message: "Invalid curriculum_year" };
+      set.status = 400;
+      return { message: "Invalid curriculum_year" };
+    }
+
+    const exists = await curriculumYearExists(program, curriculumYear);
+    if (!exists) {
+      set.status = 404;
+      return { message: "Curriculum not found" };
     }
 
     return await getRequiredCourseList(program, curriculumYear);
@@ -59,8 +43,14 @@ export const curriculumModule = new Elysia({ prefix: "/admin" })
 
     const curriculumYear = Number(params.curriculum_year);
     if (!Number.isFinite(curriculumYear)) {
-        set.status = 400;
-        return { message: "Invalid curriculum_year" };
+      set.status = 400;
+      return { message: "Invalid curriculum_year" };
+    }
+
+    const exists = await curriculumYearExists(program, curriculumYear);
+    if (!exists) {
+      set.status = 404;
+      return { message: "Curriculum not found" };
     }
 
     return await getSkillList(program, curriculumYear);
@@ -77,6 +67,12 @@ export const curriculumModule = new Elysia({ prefix: "/admin" })
     if (program !== "CPE" && program !== "ISNE") {
       set.status = 400;
       return { message: "Invalid program" };
+    }
+
+    const exists = await curriculumYearExists(program, curriculumYear);
+    if (!exists) {
+      set.status = 404;
+      return { message: "Curriculum not found" };
     }
 
     const courses = body.courses.map((c) => String(c).trim()).filter(Boolean);
@@ -120,6 +116,12 @@ export const curriculumModule = new Elysia({ prefix: "/admin" })
     if (program !== "CPE" && program !== "ISNE") {
         set.status = 400;
         return { message: "Invalid program" };
+    }
+
+    const exists = await curriculumYearExists(program, curriculumYear);
+    if (!exists) {
+      set.status = 404;
+      return { message: "Curriculum not found" };
     }
 
     const courses = body.courses.map((c) => String(c).trim()).filter(Boolean);
