@@ -6,6 +6,7 @@ import { allCourse } from "./modules/all_course";
 import  {validateUser}  from "./modules/validator";
 import cors from "@elysiajs/cors";
 import { courseSkillController } from "./modules/skill/controller";
+import { curriculumModule } from "./modules/curriculum";
 import { dashboardRoute } from "./modules/dashboard";
 const app = new Elysia()
   .use(swagger())
@@ -20,7 +21,12 @@ const app = new Elysia()
   .use(dashboardRoute)
   .use(courseRoute)
   .use(courseSkillController)
-  .listen(3000);
+  .use(curriculumModule)
+
+  .listen({
+    port: 3000,
+    hostname: '0.0.0.0' 
+  });
 
 
 console.log(`Test login url: ${process.env.CMU_ENTRAID_URL}`)
