@@ -9,6 +9,7 @@ export namespace CourseSkillModel {
     });
 
     export const RubricData = t.Object({
+        grade: t.String(),
         level: t.Integer(),
         descTH: t.Optional(t.String()),
         descENG: t.Optional(t.String()),
@@ -75,17 +76,34 @@ export namespace CourseSkillModel {
     });
 
     export const CreateCourseSkill = t.Omit(CourseSkill, ['id', 'createdAt', 'updatedAt']);
-    
-    export const UpdateCourseSkill = t.Object({
-        courseNo: t.String(),
-        skills: t.Array(SkillData),
-    });
+
+
+        export const UpdateCourseSkillRubrics = t.Object({
+    courseNo: t.String(),
+    skillID:  t.String(),
+      rubrics: t.Array(
+        t.Object({
+      grade: t.String(),
+      level: t.Integer()
+    }))
+});
 
     export const CreateCourseSkillRequest = t.Object({
     courseNo: t.String(),
-    skillSelections: t.Array(t.Object({
-        skillId: t.String(),
-        selectedRubricLevels: t.Integer()
+    skillID:  t.String(),
+      rubrics: t.Array(
+        t.Object({
+      grade: t.String(),
+      level: t.Integer()
     }))
 });
+
+    export const RemoveSkillInCourse = t.Object({
+      courseNo: t.String(),
+      skillID: t.String()
+    })
+    export const MaxLevelSkillCourse = t.Object({
+        courseNolist: t.Array(t.String())
+    });
+
 }

@@ -83,6 +83,7 @@ type SkillData {
 }
 
 type RubricData {
+  grade   String
   level   Int
   descTH  String?
   descENG String?
