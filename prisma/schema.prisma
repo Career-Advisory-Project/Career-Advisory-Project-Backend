@@ -109,9 +109,19 @@ type CourseDashboardItem {
 }
 
 model Dashboard {
-  id  String   @id @default(auto()) @map("_id") @db.ObjectId
-  cmuitaccount String @unique
+  id            String                @id @default(auto()) @map("_id") @db.ObjectId
+  cmuitaccount  String                @unique
   coursesNoList CourseDashboardItem[]
+  updatedAt     DateTime              @default(now())
+  createdAt     DateTime              @default(now())
+}
+
+model UserList {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  cmuitaccount String   @unique
+  fname        String
+  lname        String
+  role         String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -166,3 +176,4 @@ model CurriculumOverride {
   createdAt         DateTime @default(now())
   @@index([curriculumProgram, year, isCOOPPlan])
 }
+

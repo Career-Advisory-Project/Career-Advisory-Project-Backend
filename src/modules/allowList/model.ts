@@ -1,20 +1,33 @@
-import {t} from "elysia"
+import { t } from "elysia"
 const roles = ['admin', 'user'];
-export namespace UserManagerModel{
-    export const getUserQuery = t.Nullable(t.Object({
-        role: t.String(roles)
-    }))
+export namespace UserManagerModel {
+    export class EmailNotValidError extends Error {
+        public NotValidList: string[]
+
+        constructor(message: string, NotValidList: string[]) {
+            super(message)
+            this.NotValidList = NotValidList
+        }
+    }
+    export enum Role {
+        admin,
+        user
+    }
+    export const getUserQuery = t.Object({
+        role: t.String(Role),
+        filter: t.Optional(t.String())
+    })
 
     export const AddUserBody = t.Object(
         {
-            cmu_emails: t.String(),
-            role: t.String(roles)
+            cmuitaccount: t.Array(t.String()),
+            role: t.String(Role)
         }
     )
 
     export const DeleteUserBody = t.Object(
         {
-            cmu_emails: t.String(),
+            cmuitaccount: t.Array(t.String()),
         }
     )
 }

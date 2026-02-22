@@ -8,6 +8,7 @@ import cors from "@elysiajs/cors";
 import { courseSkillController } from "./modules/skill/controller";
 import { curriculumModule } from "./modules/curriculum";
 import { dashboardRoute } from "./modules/dashboard";
+import { UserManagerRoute } from "./modules/allowList";
 const app = new Elysia()
   .use(swagger())
   .use(cors({
@@ -17,6 +18,7 @@ const app = new Elysia()
   }))
   .use(auth)
   // .onBeforeHandle (validateUser)
+  .use(UserManagerRoute)
   .use(allCourse)
   .use(dashboardRoute)
   .use(courseRoute)
