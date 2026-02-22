@@ -7,13 +7,34 @@ export const CourseSkillService = {
         });
     },
 
-    async getByCourseNo(courseNo: string) {
-        const record = await prisma.courseSkill.findFirst({
-            where: { courseNo: courseNo }
-        });
-        if (!record) throw new Error("CourseSkill record not found");
-        return record;
-    },
+  async getByCourseNo(courseNo: string) {
+
+    const course = await prisma.course.findFirst({
+      where: { courseNo }
+    });
+
+    if (!course) {
+      throw new Error("Course record not found");
+    }
+
+    const courseSkill = await prisma.courseSkill.findFirst({
+      where: { courseNo }
+    });
+
+    if (!courseSkill) {
+      return {
+        courseNo: course.courseNo,
+        name: course.name,
+        descTH: course.descTH,
+        descENG: course.descENG,
+        skills: [] as any[]
+      };
+    }
+    return {
+      ...courseSkill,
+      skills: courseSkill.skills ?? []
+    };
+  },
 
     async update(id: string, data: any) {
         return await prisma.courseSkill.update({
@@ -40,7 +61,7 @@ export const CourseSkillService = {
                     where: { id: selection.skillId },
                 });
 
-                if (!skill) return null;
+                if (!skill) throw new Error(`Skill with ID ${selection.skillId} not found`);
 
                 return {
                     id: skill.id,
@@ -107,14 +128,14 @@ export const CourseSkillService = {
         });
     },
 
-    async updateSkillRubrics(courseSkillId: string, skillId: string, newRubricLevels: number) {
-  const record = await prisma.courseSkill.findUnique({ where: { id: courseSkillId } });
-  if (!record) throw new Error("CourseSkill record not found");
+    async updateSkillRubrics(courseNo: string, skillId: string, newRubricLevels: number) {
+  const record = await prisma.courseSkill.findFirst({ where: { courseNo: courseNo } });
+  if (!record) throw new Error("Course record not found");
 
   const masterSkill = await prisma.skill.findUnique({
     where: { id: skillId },
   });
-  if (!masterSkill) throw new Error("Master Skill not found");
+  if (!masterSkill) throw new Error("Skill not found");
 
   const updatedRubricData = masterSkill.rubrics.filter((r: any) => r.level === newRubricLevels);
   if (updatedRubricData.length === 0) {
@@ -127,7 +148,7 @@ export const CourseSkillService = {
   });
 
   return await prisma.courseSkill.update({
-    where: { id: courseSkillId },
+    where: { id: record.id },
     data: {
       skills: { set: updatedSkills }
     }
@@ -135,7 +156,7 @@ export const CourseSkillService = {
 },
 
     async updateCourseSkills(
-  courseId: string,
+  courseNo: string,
   skills: {
     id: string;
     name: string;
@@ -146,7 +167,7 @@ export const CourseSkillService = {
   }[]
 ) {
 
-  const course = await prisma.courseSkill.findUnique({ where: { id: courseId } });
+  const course = await prisma.courseSkill.findFirst({ where: { courseNo: courseNo } });
   if (!course) throw new Error("Course not found");
 
 
