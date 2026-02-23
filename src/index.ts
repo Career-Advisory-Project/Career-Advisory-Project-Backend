@@ -2,20 +2,24 @@ import { Elysia } from "elysia";
 import { courseRoute } from './modules/course';
 import { swagger } from '@elysiajs/swagger'
 import { auth } from "./modules/auth";
+import { allCourse } from "./modules/all_course";
+import  {validateUser}  from "./modules/validator";
 import cors from "@elysiajs/cors";
 import { courseSkillController } from "./modules/skill/controller";
 import { curriculumModule } from "./modules/curriculum";
-
-const app = new Elysia().get("/", async() => {
-  return "Hello Elysia"})
+import { dashboardRoute } from "./modules/dashboard";
+const app = new Elysia()
   .use(swagger())
   .use(cors({
   origin:true,
   credentials:true,
   allowedHeaders: ['Content-Type', 'Authorization']
   }))
-  .use(courseRoute)
   .use(auth)
+  // .onBeforeHandle (validateUser)
+  .use(allCourse)
+  .use(dashboardRoute)
+  .use(courseRoute)
   .use(courseSkillController)
   .use(curriculumModule)
 
