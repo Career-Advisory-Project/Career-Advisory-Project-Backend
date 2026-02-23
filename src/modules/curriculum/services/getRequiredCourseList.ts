@@ -1,5 +1,6 @@
 import prisma from "../../../db";
 import { getMergedRequiredCourseNos } from "./mergeOverride";
+import { normalizeCourseNo } from "../model";
 
 export type RequiredCourseItem = {
   courseNo: string;
@@ -7,7 +8,7 @@ export type RequiredCourseItem = {
   credit: string;
 };
 
-function buildRequiredCreditMap(curr: any): Map<string, number> {
+function buildCreditMapFromCurr(curr: any): Map<string, number> {
   const allow = new Set(["core", "major required"]);
   const map = new Map<string, number>();
 
@@ -16,21 +17,48 @@ function buildRequiredCreditMap(curr: any): Map<string, number> {
     if (!allow.has(name)) continue;
 
     for (const c of g.requiredCourses ?? []) {
-      const courseNo = String(c.courseNo);
+      const courseNo = normalizeCourseNo(c.courseNo);
       const credits = Number(c.credits);
-      if (!Number.isNaN(credits)) map.set(courseNo, credits);
+      if (courseNo && Number.isFinite(credits)) map.set(courseNo, credits);
     }
   }
 
   for (const g of curr.geGroups ?? []) {
     for (const c of g.requiredCourses ?? []) {
-      const courseNo = String(c.courseNo);
+      const courseNo = normalizeCourseNo(c.courseNo);
       const credits = Number(c.credits);
-      if (!Number.isNaN(credits)) map.set(courseNo, credits);
+      if (courseNo && Number.isFinite(credits)) map.set(courseNo, credits);
     }
   }
 
   return map;
+}
+
+async function fillMissingCreditsFromOtherCurriculums(
+  creditMap: Map<string, number>,
+  missingCourseNos: string[]
+) {
+  if (missingCourseNos.length === 0) return;
+
+  const currs = await prisma.curriculum.findMany({
+    select: {
+      coreAndMajorGroups: true,
+      geGroups: true,
+    },
+  });
+
+  const global = new Map<string, number>();
+  for (const curr of currs) {
+    const m = buildCreditMapFromCurr(curr);
+    for (const [k, v] of m.entries()) {
+      if (!global.has(k)) global.set(k, v);
+    }
+  }
+
+  for (const courseNo of missingCourseNos) {
+    const c = global.get(courseNo);
+    if (Number.isFinite(c)) creditMap.set(courseNo, c!);
+  }
 }
 
 export async function getRequiredCourseList(program: string, curriculumYear: number) {
@@ -40,9 +68,11 @@ export async function getRequiredCourseList(program: string, curriculumYear: num
     return {
       curriculum_year: String(curriculumYear),
       program: String(program).toUpperCase(),
-      course_list: [],
+      course_list: [] as RequiredCourseItem[],
     };
   }
+
+  const courseNos = (merged.courseNos ?? []).map(normalizeCourseNo).filter(Boolean);
 
   const curr = await prisma.curriculum.findFirst({
     where: {
@@ -58,17 +88,11 @@ export async function getRequiredCourseList(program: string, curriculumYear: num
     },
   });
 
-  if (!curr) {
-    return {
-      curriculum_year: String(curriculumYear),
-      program: String(program).toUpperCase(),
-      course_list: [],
-    };
-  }
-
-  const courseNos = (merged.courseNos ?? []).map(String);
-  const creditMap = buildRequiredCreditMap(curr);
-
+  const creditMap = curr ? buildCreditMapFromCurr(curr) : new Map<string, number>();
+  const missing = courseNos.filter((c) => !creditMap.has(c));
+  
+  await fillMissingCreditsFromOtherCurriculums(creditMap, missing);
+  
   const courses = courseNos.length
     ? await prisma.course.findMany({
         where: { courseNo: { in: courseNos } },
@@ -76,7 +100,7 @@ export async function getRequiredCourseList(program: string, curriculumYear: num
       })
     : [];
 
-  const nameMap = new Map(courses.map((c) => [String(c.courseNo), c.name]));
+  const nameMap = new Map(courses.map((c) => [normalizeCourseNo(c.courseNo), c.name]));
 
   const course_list: RequiredCourseItem[] = courseNos
     .map((courseNo) => ({
@@ -87,8 +111,8 @@ export async function getRequiredCourseList(program: string, curriculumYear: num
     .sort((a, b) => Number(a.courseNo) - Number(b.courseNo));
 
   return {
-    curriculum_year: String(curr.year),
-    program: String(curr.curriculumProgram).toUpperCase(),
+    curriculum_year: String(merged.year),
+    program: merged.curriculumProgram,
     course_list,
   };
 }
