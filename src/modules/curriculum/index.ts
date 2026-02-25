@@ -145,6 +145,14 @@ export const curriculumModule = new Elysia({ prefix: "/admin" })
   .post("/curriculum/sync", async ({ set }) => {
     try {
       const result = await syncAllCurriculums();
+
+      if (result.totalSynced === 0) {
+        return status(500, {
+          ok: false,
+          message: "Failed to sync any curriculums",
+        });
+      }
+      
       return status(200, {
         ok: true,
         total_synced: result.totalSynced,
