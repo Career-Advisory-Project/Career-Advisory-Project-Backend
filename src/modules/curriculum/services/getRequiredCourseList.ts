@@ -9,26 +9,28 @@ export type RequiredCourseItem = {
 };
 
 function buildCreditMapFromCurr(curr: any): Map<string, number> {
-  const allow = new Set(["core", "major required"]);
   const map = new Map<string, number>();
 
-  for (const g of curr.coreAndMajorGroups ?? []) {
-    const name = String(g.groupName ?? "").trim().toLowerCase();
-    if (!allow.has(name)) continue;
-
-    for (const c of g.requiredCourses ?? []) {
+  const addCourses = (courses: any[] | undefined | null) => {
+    for (const c of courses ?? []) {
       const courseNo = normalizeCourseNo(c.courseNo);
       const credits = Number(c.credits);
-      if (courseNo && Number.isFinite(credits)) map.set(courseNo, credits);
+      if (courseNo && Number.isFinite(credits) && !map.has(courseNo)) {
+        map.set(courseNo, credits);
+      }
     }
+  };
+
+  // cover both requiredCourses and electiveCourses in coreAndMajorGroups
+  for (const g of curr.coreAndMajorGroups ?? []) {
+    addCourses(g.requiredCourses);
+    addCourses(g.electiveCourses);
   }
 
+  // cover both requiredCourses and electiveCourses in geGroups
   for (const g of curr.geGroups ?? []) {
-    for (const c of g.requiredCourses ?? []) {
-      const courseNo = normalizeCourseNo(c.courseNo);
-      const credits = Number(c.credits);
-      if (courseNo && Number.isFinite(credits)) map.set(courseNo, credits);
-    }
+    addCourses(g.requiredCourses);
+    addCourses(g.electiveCourses);
   }
 
   return map;
@@ -90,9 +92,9 @@ export async function getRequiredCourseList(program: string, curriculumYear: num
 
   const creditMap = curr ? buildCreditMapFromCurr(curr) : new Map<string, number>();
   const missing = courseNos.filter((c) => !creditMap.has(c));
-  
+
   await fillMissingCreditsFromOtherCurriculums(creditMap, missing);
-  
+
   const courses = courseNos.length
     ? await prisma.course.findMany({
         where: { courseNo: { in: courseNos } },

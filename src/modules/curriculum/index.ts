@@ -6,6 +6,7 @@ import { addCoursesToCurriculum } from "./services/addCourseToCurr";
 import prisma from "../../db";
 import { delCoursesFromCurriculum } from "./services/delCourseFromCurr";
 import { curriculumYearExists } from "./model";
+import { syncAllCurriculums } from "./services/getCurriculum";
 
 export const curriculumModule = new Elysia({ prefix: "/admin" })
   .get("/curriculum", async () => {
@@ -153,4 +154,24 @@ export const curriculumModule = new Elysia({ prefix: "/admin" })
         program: t.String(),
         courses: t.Array(t.String()),
     }),
+  })
+
+  .post("/curriculum/sync", async ({ set }) => {
+    try {
+      const result = await syncAllCurriculums();
+      return {
+        ok: true,
+        total_synced: result.totalSynced,
+        total_failed: result.totalFailed,
+        synced: result.synced,
+        failed: result.failed,
+      };
+    } catch (e) {
+      set.status = 500;
+      return {
+        ok: false,
+        message: "Failed to sync curriculums",
+        error: String(e),
+      };
+    }
   });
