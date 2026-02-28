@@ -3,24 +3,24 @@ import { CourseSkillModel } from "../skill/model";
 import { CourseSkillService } from "../skill/service";
 
 export const courseSkillController = new Elysia({ prefix: "/courseskills" })
-  .post(
-    "/",
-    async ({ body, set }) => {
-      try {
-        return await CourseSkillService.createCourseSkill(
-          body.courseNo,
-          body.skillID,
-          body.rubrics
-        );
-      } catch (error: any) {
-        set.status = 400;
-        return { error: error.message };
-      }
-    },
-    {
-      body: CourseSkillModel.CreateCourseSkillRequest,
-    }
-  )
+  // .post(
+  //   "/",
+  //   async ({ body, set }) => {
+  //     try {
+  //       return await CourseSkillService.createCourseSkill(
+  //         body.courseNo,
+  //         body.skillID,
+  //         body.rubrics
+  //       );
+  //     } catch (error: any) {
+  //       set.status = 400;
+  //       return { error: error.message };
+  //     }
+  //   },
+  //   {
+  //     body: CourseSkillModel.CreateCourseSkillRequest,
+  //   }
+  // )
   .get("/", async () => {
     return await CourseSkillService.getAll();
   })
@@ -60,7 +60,7 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
     }
   )
 
-  .patch(
+  .put(
   "/",
   async ({ body, set }) => {
     try {

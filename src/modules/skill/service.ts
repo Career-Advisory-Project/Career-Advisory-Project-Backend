@@ -102,11 +102,125 @@ async getMaxLevel(courseNolist: string[]) {
         });
     },
 
-    async createCourseSkill(
+//     async createCourseSkill(
+//   courseNo: string,
+//   skillID: string,
+//   rubrics: { grade: string; level: number }[]
+// ) {
+//   const skill = await prisma.skill.findUnique({
+//     where: { id: skillID }
+//   });
+
+//   if (!skill) {
+//     throw new Error("Skill not found");
+//   }
+
+
+//   const rubricData = rubrics.map((input) => {
+//     const matched = skill.rubrics.find(
+//       (r: { level: number; }) => r.level === input.level
+//     );
+
+//     if (!matched) {
+//       throw new Error(`Level ${input.level} not found in skill rubric`);
+//     }
+
+//     return {
+//       grade: input.grade,
+//       level: input.level,
+//       descTH: matched.descTH,
+//       descENG: matched.descENG
+//     };
+//   });
+
+//   const skillData = {
+//     id: skill.id,
+//     name: skill.name,
+//     descTH: skill.descTH,
+//     descENG: skill.descENG,
+//     tag: skill.tag,
+//     rubrics: rubricData
+//   };
+
+//   const existing = await prisma.courseSkill.findFirst({
+//     where: { courseNo }
+//   });
+
+//   if (existing) {
+//     const alreadyExists = existing.skills.some(
+//       (s: any) => s.id === skillID
+//     );
+
+//     if (alreadyExists) {
+//       throw new Error("Skill already exists in this course");
+//     }
+
+//     return await prisma.courseSkill.update({
+//       where: { id: existing.id },
+//       data: {
+//         skills: {
+//           push: skillData
+//         }
+//       }
+//     });
+//   }
+
+//   return await prisma.courseSkill.create({
+//     data: {
+//       courseNo: courseNo,
+//       name: skill.name,
+//       descTH: skill.descTH,
+//       descENG: skill.descENG,
+//       skills: [skillData]
+//     }
+//   });
+// },
+
+
+    async removeSkillFromCourse(courseNo: string, skillID: string) {
+  const existing = await prisma.courseSkill.findFirst({
+    where: { courseNo }
+  });
+  if (!existing) {
+    throw new Error("Course not found");
+  }
+
+  const skillExists = existing.skills.some(
+    (    s: { id: string; }) => s.id === skillID
+  );
+
+  if (!skillExists) {
+    throw new Error("Skill not found in this course");
+  }
+  const updatedSkills = existing.skills.filter(
+    (    s: { id: string; }) => s.id !== skillID
+  );
+  return await prisma.courseSkill.update({
+    where: { id: existing.id },
+    data: {
+      skills: updatedSkills
+    }
+  });
+}
+,
+
+  async updateCourseSkillRubrics(
   courseNo: string,
   skillID: string,
   rubrics: { grade: string; level: number }[]
 ) {
+  const course = await prisma.courseSkill.findFirst({
+    where: { courseNo }
+  });
+
+  if (!course) {{
+  const checkcourse = await prisma.course.findFirst({
+    where: { courseNo}
+  })
+
+  if(!checkcourse){
+    throw new Error("Course not found");
+  }
   const skill = await prisma.skill.findUnique({
     where: { id: skillID }
   });
@@ -173,47 +287,9 @@ async getMaxLevel(courseNolist: string[]) {
       descENG: skill.descENG,
       skills: [skillData]
     }
-  });
-},
-
-
-    async removeSkillFromCourse(courseNo: string, skillID: string) {
-  const existing = await prisma.courseSkill.findFirst({
-    where: { courseNo }
-  });
-  if (!existing) {
-    throw new Error("Course not found");
-  }
-
-  const skillExists = existing.skills.some(
-    (    s: { id: string; }) => s.id === skillID
-  );
-
-  if (!skillExists) {
-    throw new Error("Skill not found in this course");
-  }
-  const updatedSkills = existing.skills.filter(
-    (    s: { id: string; }) => s.id !== skillID
-  );
-  return await prisma.courseSkill.update({
-    where: { id: existing.id },
-    data: {
-      skills: updatedSkills
-    }
-  });
+  });}
 }
-,
-
-  async updateCourseSkillRubrics(
-  courseNo: string,
-  skillID: string,
-  rubrics: { grade: string; level: number }[]
-) {
-  const course = await prisma.courseSkill.findFirst({
-    where: { courseNo }
-  });
-
-  if (!course) throw new Error("Course not found");
+  else{
 
   const skillIndex = course.skills.findIndex(
     (s: any) => s.id === skillID
@@ -249,7 +325,7 @@ async getMaxLevel(courseNolist: string[]) {
     data: {
       skills: updatedSkills
     }
-  });
+  });}
 }
 
 
