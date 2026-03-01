@@ -62,24 +62,33 @@ export const auth = new Elysia({ prefix: '/auth' })
     })
     .get('/me', async ({ jwt, cookie: { "cmu-entraid-example-token": cmuToken }, status }) => {
 
-    if (!cmuToken.value) {
-        return status(401, "Unauthorized")
-    }
+        if (!cmuToken.value) {
+            return status(401, "Unauthorized")
+        }
 
-    const profile = await jwt.verify(cmuToken.value)
+        const profile = await jwt.verify(cmuToken.value)
 
-    if (!profile) {
-        return status(401, "Unauthorized")
-    }
+        if (!profile) {
+            return status(401, "Unauthorized")
+        }
 
-    return {
-        ok: true,
-        user: profile
-    }
+        return {
+            ok: true,
+            user: profile
+        }
 
-}, {
-    cookie: t.Cookie({
-        "cmu-entraid-example-token": t.String()
+    }, {
+        cookie: t.Cookie({
+            "cmu-entraid-example-token": t.String()
+        })
+    }).post('/signOut', async ({ cookie: { "cmu-entraid-example-token": cmuToken } }) => {
+        await cmuToken.remove()
+        return {
+            ok: true
+        }
+    }, {
+        cookie: t.Cookie({
+            "cmu-entraid-example-token": t.String()
+        })
     })
-})
     ;
