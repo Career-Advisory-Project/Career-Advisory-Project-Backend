@@ -155,40 +155,58 @@ export async function getCurriculum(key: CurriculumKey) {
 }
 
 export async function syncAllCurriculums() {
-  const targets: CurriculumKey[] = [
-    { curriculumProgram: "CPE", year: 2563, isCOOPPlan: false },
-    { curriculumProgram: "CPE", year: 2563, isCOOPPlan: true },
+  const currentBE = new Date().getFullYear() + 543;
 
-    { curriculumProgram: "CPE", year: 2568, isCOOPPlan: false },
-    { curriculumProgram: "CPE", year: 2568, isCOOPPlan: true },
+  const startYearMap: Record<CurriculumKey["curriculumProgram"], number> = {
+    CPE: 2563,
+    ISNE: 2561,
+  };
 
-    { curriculumProgram: "ISNE", year: 2561, isCOOPPlan: false },
-    { curriculumProgram: "ISNE", year: 2561, isCOOPPlan: true },
+  const coopPlans: boolean[] = [false, true];
+  const targets: CurriculumKey[] = [];
 
-    { curriculumProgram: "ISNE", year: 2566, isCOOPPlan: false },
-    { curriculumProgram: "ISNE", year: 2566, isCOOPPlan: true },
-  ];
+  for (const program of Object.keys(startYearMap) as CurriculumKey["curriculumProgram"][]) {
+    let year = startYearMap[program];
 
-  const ok: any[] = [];
-  const failed: Array<{ key: CurriculumKey; error: string }> = [];
+    while (year <= currentBE) {
+      for (const isCOOPPlan of coopPlans) {
+        targets.push({
+          curriculumProgram: program,
+          year,
+          isCOOPPlan,
+        });
+      }
+      year += 1;
+    }
+  }
+
+  const format = (k: CurriculumKey) =>
+    `${k.curriculumProgram}-${k.year}-${k.isCOOPPlan ? "COOP" : "NONCOOP"}`;
+
+  const synced: string[] = [];
+  const failed: Array<{ key: string; error: string }> = [];
 
   for (const key of targets) {
     console.log(`Syncing ${key.curriculumProgram} ${key.year} COOP=${key.isCOOPPlan}`);
 
     try {
-      const res = await getCurriculum(key);
-      ok.push(res.curriculum);
+      await getCurriculum(key);
+      synced.push(format(key));
     } catch (e: any) {
-      failed.push({ key, error: String(e?.message ?? e) });
+      failed.push({
+        key: format(key),
+        error: String(e?.message ?? e),
+      });
       console.log("  -> skipped:", String(e?.message ?? e));
     }
   }
 
   console.log("Done ✔");
   return { 
-    ok: true, 
-    totalSynced: ok.length, 
-    totalFailed: failed.length, 
-    curriculums: ok, failed 
+    ok: true,
+    totalSynced: synced.length,
+    totalFailed: failed.length,
+    synced,
+    failed,
   };
 }
