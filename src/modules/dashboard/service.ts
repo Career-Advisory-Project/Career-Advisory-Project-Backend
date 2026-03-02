@@ -1,17 +1,28 @@
 import { Prisma } from "../../../generated/prisma/browser";
 import prisma from "../../db";
 import { DashboardModel } from "./model"
-
+import { UserManager } from "../allowList/service";
 
 export class Dashboard {
 
     public static getDashboardCourse = async (cmuitaccount: string): Promise<DashboardModel.courseListType | null> => {
+        if(!UserManager.isValidEmail(cmuitaccount)){
+            return null;
+        }
         const dashboardUser = await prisma.dashboard.findFirst({
             where: {
                 cmuitaccount: cmuitaccount
             }
         })
-        if (!dashboardUser) return null
+        if (!dashboardUser) {
+            const newDashboard = await prisma.dashboard.create({
+                data: {
+                    cmuitaccount: cmuitaccount,
+                    coursesNoList: []
+                }
+            })
+            return newDashboard.coursesNoList;
+        }
         // console.log(dashboardUser.coursesNoList)
         return dashboardUser.coursesNoList
     }
@@ -132,7 +143,7 @@ export class Dashboard {
                     deleteMany: {
                         where: {
                             courseNo: {
-                                in:courseNoList
+                                in: courseNoList
                             },
                         },
                     },

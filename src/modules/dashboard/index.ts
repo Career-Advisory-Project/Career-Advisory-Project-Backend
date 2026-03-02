@@ -8,13 +8,17 @@ export const dashboardRoute = new Elysia()
         const courses = await Dashboard.getDashboardCourse(accountEmail)
         if (!courses) {
             set.status = 404
-            return "User not found"
+            return "User not found / CMU email not valid"
         }
-        console.log(courses)
+        // console.log(courses)
         return {
             cmuitaccount: accountEmail,
             courses: courses,
         }
+    },{
+        params:t.Object({
+            cmuitaccount:t.String()
+        })
     })
     .post("/dashboard", async ({ body, set }) => {
         try {

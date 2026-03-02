@@ -14,7 +14,7 @@ export const UserManagerRoute = new Elysia({ prefix: '/admin' })
                 user: filteredUser
             }
         }
-        console.log("filter null")
+        // console.log("filter null")
         const user = await UserManager.getUser(role)
         return {
             user: user

@@ -1,7 +1,7 @@
 import prisma from "../../db";
 import { UserManagerModel } from "./model";
 export class UserManager {
-    private static isValidEmail(cmuitaccount: string) {
+    public static isValidEmail(cmuitaccount: string) {
         const regex = /^[a-zA-Z0-9._%+-]+@cmu\.ac\.th$/i;
         return regex.test(cmuitaccount.trim());
     }
