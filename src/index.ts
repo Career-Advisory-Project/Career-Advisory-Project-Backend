@@ -44,9 +44,15 @@ const app = new Elysia()
   .use(dashboardRoute)
   .use(courseRoute)
   .use(courseSkillController)
-  .onBeforeHandle(validateAdmin)
-  .use(UserManagerRoute)
-  .use(curriculumModule)
+  .guard(
+    { beforeHandle: validateAdmin },   
+    (app) => app
+      .use(UserManagerRoute)
+      .use(curriculumModule)
+  )
+  // .onBeforeHandle(validateAdmin)
+  // .use(UserManagerRoute)
+  // .use(curriculumModule)
   .listen({
     port: 3000,
     hostname: '0.0.0.0'
