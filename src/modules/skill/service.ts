@@ -67,7 +67,19 @@ export const CourseSkillService = {
     if (!curriculum.allCourseNos || curriculum.allCourseNos.length === 0) {
       throw new Error("No courses found in this curriculum");
     }
-    return await this.getMaxLevel(curriculum.allCourseNos);
+
+    // Get max level results
+    const maxLevelResults = await this.getMaxLevel(curriculum.allCourseNos);
+
+    // Return combined response with courses and max levels
+    return {
+      curriculumId: curriculum.id,
+      curriculumProgram: curriculum.curriculumProgram,
+      year: curriculum.year,
+      isCOOPPlan: curriculum.isCOOPPlan,
+      courses: curriculum.allCourseNos,
+      maxLevels: maxLevelResults,
+    };
   },
 
   async getByCourseNo(courseNo: string) {
