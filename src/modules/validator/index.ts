@@ -32,7 +32,7 @@ export const validateUser = async (context: Context) => {
         set.status = 401
         return{
             ok:false,
-            message:"User is not unauthorized"
+            message:"Unauthorized: User cmu account is not allowed"
         }
     }
     
@@ -64,7 +64,7 @@ const { jwt, cookie: { "cmu-entraid-example-token": cmuToken }, set } = context 
         set.status = 401
         return{
             ok:false,
-            message:"User is not unauthorized"
+            message:"User is authorized"
         }
     }
 }
