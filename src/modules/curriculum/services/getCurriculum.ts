@@ -3,8 +3,8 @@ import prisma from "../../../db";
 import type { CurriculumKey } from "../model";
 import { uniq } from "../model";
 
-const BASE_URL = process.env.CPE_API_BASE_URL!;
-const API_KEY = process.env.CPE_API_KEY!;
+const BASE_URL = process.env.CPE_API_URL!;
+const API_KEY = process.env.CPE_API_TOKEN!;
 
 const headers = {
   Authorization: `Bearer ${API_KEY}`,
@@ -72,8 +72,8 @@ function collectRequiredCourseNos(
 }
 
 async function scanCurriculumFromCpe(key: CurriculumKey): Promise<CpeCurriculum> {
-  if (!BASE_URL) throw new Error("Missing env: CPE_API_BASE_URL");
-  if (!API_KEY) throw new Error("Missing env: CPE_API_KEY");
+  if (!BASE_URL) throw new Error("Missing env: CPE_API_URL");
+  if (!API_KEY) throw new Error("Missing env: CPE_API_TOKEN");
 
   try {
     const res = await axios.get<CpeCurriculumResponse>(`${BASE_URL}/curriculum`, {
