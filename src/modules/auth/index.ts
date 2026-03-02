@@ -20,6 +20,8 @@ export const auth = new Elysia({ prefix: '/auth' })
                 const cmuBasicInfo = await Auth.getBasicInfo(accessToken);
                 if (!cmuBasicInfo) throw new Error('Failed to get basic info');
 
+                const role = await Auth.getRole(cmuBasicInfo.cmuitaccount)
+                await Auth.updateDashboard(cmuBasicInfo)
                 const token = await jwt.sign({
                     cmuitaccount_name: cmuBasicInfo.cmuitaccount_name,
                     cmuitaccount: cmuBasicInfo.cmuitaccount,
@@ -36,7 +38,8 @@ export const auth = new Elysia({ prefix: '/auth' })
                     organization_name_EN: cmuBasicInfo.organization_name_EN,
                     itaccounttype_id: cmuBasicInfo.itaccounttype_id,
                     itaccounttype_TH: cmuBasicInfo.itaccounttype_TH,
-                    itaccounttype_EN: cmuBasicInfo.itaccounttype_EN
+                    itaccounttype_EN: cmuBasicInfo.itaccounttype_EN,
+                    role:role
                 })
                 cmuToken.value = token
                 cmuToken.httpOnly = true
