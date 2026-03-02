@@ -1,4 +1,3 @@
-import prisma from "../../../db";
 import { getMergedRequiredCourseNos } from "./mergeOverride";
 import { CourseSkillService } from "../../skill/service";
 
