@@ -310,7 +310,40 @@ export const CourseSkillService = {
       const skillIndex = course.skills.findIndex((s: any) => s.id === skillID);
 
       if (skillIndex === -1) {
-        throw new Error("Skill not found in this course");
+        const skill = await prisma.skill.findUnique({
+          where: { id: skillID },
+        });
+        if (!skill) throw new Error("Skill not found");
+
+        const rubricData = rubrics.map((input) => {
+          const matched = skill.rubrics.find((r: { level: number }) => r.level === input.level);
+          if (!matched) throw new Error(`Level ${input.level} not found in skill rubric`);
+          return {
+            grade: input.grade,
+            level: input.level,
+            descTH: matched.descTH,
+            descENG: matched.descENG,
+          };
+        });
+
+        const skillData = {
+          id: skill.id,
+          name: skill.name,
+          descTH: skill.descTH,
+          descENG: skill.descENG,
+          tag: skill.tag,
+          rubrics: rubricData,
+        };
+
+        // ใช้คำสั่ง push ของ Prisma เพื่อแทรก Object ลงไปใน Array
+        return await prisma.courseSkill.update({
+          where: { id: course.id },
+          data: {
+            skills: {
+              push: skillData,
+            },
+          },
+        });
       }
 
       const targetSkill = course.skills[skillIndex];
