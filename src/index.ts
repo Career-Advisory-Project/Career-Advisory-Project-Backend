@@ -24,28 +24,28 @@ export const app = new Elysia()
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization']
   }))
-  .onAfterResponse(({ request, set, responseValue }) => {
-    const { method, url, headers } = request
-    const { status, headers: resHeaders } = set
-    logger.info({
-      method,
-      url,
-      status,
-      response: responseValue,
-    })
-  })
+  // .onAfterResponse(({ request, set, responseValue }) => {
+  //   const { method, url, headers } = request
+  //   const { status, headers: resHeaders } = set
+  //   logger.info({
+  //     method,
+  //     url,
+  //     status,
+  //     response: responseValue,
+  //   })
+  // })
   .use(auth)
-  .onBeforeHandle(validateUser)
+  // .onBeforeHandle(validateUser)
   .use(allCourse)
   .use(dashboardRoute)
   .use(courseRoute)
   .use(courseSkillController)
-  .guard(
-    { beforeHandle: validateAdmin },   
-    (app) => app
+  // .guard(
+    // { beforeHandle: validateAdmin },   
+    // (app) => app
       .use(UserManagerRoute)
       .use(curriculumModule)
-  )
+  // )
   .listen(3000);
 
 

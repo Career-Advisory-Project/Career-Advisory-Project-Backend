@@ -6,12 +6,16 @@ const api = treaty(app)
 
 describe('Elysia routes', () => {
     it('GET /dashboard get dashboard course for teacher', async () => {
-        const { data, error } = await api.dashboard({ 
-            cmuitaccount: "yutthakarn_sajui@cmu.ac.th" 
-        }).get();
+        const testToken = "YOUR_VALID_JWT_OR_TOKEN_HERE";
 
-        expect(error).toBeUndefined();
-        expect(data).toBe('👋');
+        const { data, error, status } = await api.dashboard({
+            cmuitaccount: "yutthakarn_sajui@cmu.ac.th"
+        }).get();
+        expect(error).toBeNull();
+        expect(data).toEqual({
+            "cmuitaccount": "yutthakarn_sajui@cmu.ac.th",
+            "courses": []
+        });
     });
 
 })
