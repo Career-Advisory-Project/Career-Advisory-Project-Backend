@@ -17,42 +17,35 @@ const logger = pino({
 
 })
 
-const app = new Elysia()
+export const app = new Elysia()
   .use(swagger())
-  .state({               // ← define the global store
-    profile: 0,          // any type you like
-    config: { debug: true }
-  })
   .use(cors({
     origin: true,
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization']
   }))
-  .onAfterResponse(({ request, set, responseValue }) => {
-    const { method, url, headers } = request
-    const { status, headers: resHeaders } = set
-    logger.info({
-      method,
-      url,
-      status,
-      response: responseValue,
-    })
-  })
+  // .onAfterResponse(({ request, set, responseValue }) => {
+  //   const { method, url, headers } = request
+  //   const { status, headers: resHeaders } = set
+  //   logger.info({
+  //     method,
+  //     url,
+  //     status,
+  //     response: responseValue,
+  //   })
+  // })
   .use(auth)
-  .onBeforeHandle(validateUser)
+  // .onBeforeHandle(validateUser)
   .use(allCourse)
   .use(dashboardRoute)
   .use(courseRoute)
   .use(courseSkillController)
-  .guard(
-    { beforeHandle: validateAdmin },   
-    (app) => app
+  // .guard(
+    // { beforeHandle: validateAdmin },   
+    // (app) => app
       .use(UserManagerRoute)
       .use(curriculumModule)
-  )
-  // .onBeforeHandle(validateAdmin)
-  // .use(UserManagerRoute)
-  // .use(curriculumModule)
+  // )
   .listen(3000);
 
 
