@@ -53,10 +53,7 @@ const app = new Elysia()
   // .onBeforeHandle(validateAdmin)
   // .use(UserManagerRoute)
   // .use(curriculumModule)
-  .listen({
-    port: 3000,
-    hostname: '0.0.0.0'
-  });
+  .listen(3000);
 
 
 console.log(`Test login url: ${process.env.CMU_ENTRAID_URL}`)
