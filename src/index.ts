@@ -9,7 +9,7 @@ import { courseSkillController } from "./modules/skill/controller";
 import { curriculumModule } from "./modules/curriculum";
 import { dashboardRoute } from "./modules/dashboard";
 import { UserManagerRoute } from "./modules/allowList";
-const app = new Elysia()
+export const app = new Elysia()
   .use(swagger())
   .use(cors({
   origin:true,
@@ -25,10 +25,7 @@ const app = new Elysia()
   .use(courseSkillController)
   .use(curriculumModule)
 
-  .listen({
-    port: 3000,
-    hostname: '0.0.0.0' 
-  });
+  .listen(3000);
 
 
 console.log(`Test login url: ${process.env.CMU_ENTRAID_URL}`)
