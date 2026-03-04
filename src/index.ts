@@ -17,12 +17,8 @@ const logger = pino({
 
 })
 
-const app = new Elysia()
+export const app = new Elysia()
   .use(swagger())
-  .state({               // ← define the global store
-    profile: 0,          // any type you like
-    config: { debug: true }
-  })
   .use(cors({
     origin: true,
     credentials: true,
@@ -50,9 +46,6 @@ const app = new Elysia()
       .use(UserManagerRoute)
       .use(curriculumModule)
   )
-  // .onBeforeHandle(validateAdmin)
-  // .use(UserManagerRoute)
-  // .use(curriculumModule)
   .listen(3000);
 
 
