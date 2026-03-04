@@ -9,6 +9,7 @@ import { courseSkillController } from "./modules/skill/controller";
 import { curriculumModule } from "./modules/curriculum";
 import { dashboardRoute } from "./modules/dashboard";
 import { UserManagerRoute } from "./modules/allowList";
+<<<<<<< HEAD
 import { pino } from "pino";
 import { profile } from "bun:jsc";
 
@@ -17,6 +18,8 @@ const logger = pino({
 
 })
 
+=======
+>>>>>>> 67815b8e0eb5ddae9f040c8311041f711bdb76b2
 export const app = new Elysia()
   .use(swagger())
   .use(cors({
@@ -40,6 +43,7 @@ export const app = new Elysia()
   .use(dashboardRoute)
   .use(courseRoute)
   .use(courseSkillController)
+<<<<<<< HEAD
   .guard(
     { beforeHandle: validateAdmin },   
     (app) => app
@@ -49,6 +53,10 @@ export const app = new Elysia()
   // .onBeforeHandle(validateAdmin)
   // .use(UserManagerRoute)
   // .use(curriculumModule)
+=======
+  .use(curriculumModule)
+
+>>>>>>> 67815b8e0eb5ddae9f040c8311041f711bdb76b2
   .listen(3000);
 
 
