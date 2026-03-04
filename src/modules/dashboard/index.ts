@@ -15,9 +15,9 @@ export const dashboardRoute = new Elysia()
             cmuitaccount: accountEmail,
             courses: courses,
         }
-    },{
-        params:t.Object({
-            cmuitaccount:t.String()
+    }, {
+        params: t.Object({
+            cmuitaccount: t.String()
         })
     })
     .post("/dashboard", async ({ body, set }) => {
@@ -62,18 +62,19 @@ export const dashboardRoute = new Elysia()
     .delete("/dashboard", async ({ body, set }) => {
         try {
             const removedCourse = await Dashboard.removeCouseFromDashboard({ cmuitaccount: body.cmuitaccount, courseNoList: body.coursesNoList })
-            const removeNoList = removedCourse?.map((item)=>{
+            const removeNoList = removedCourse?.map((item) => {
                 return item.courseNo
             })
-            return{
-                ok:true,
-                message:"courses remain: " + removeNoList
+            return {
+                ok: true,
+                message: "courses remain: " + removeNoList
             }
         }
         catch (error: unknown) {
+            set.status = 400
             return {
-                ok:false,
-                message:"fail to remove course from dashboard"
+                ok: false,
+                message: "fail to remove course from dashboard"
             }
         }
     }, {
