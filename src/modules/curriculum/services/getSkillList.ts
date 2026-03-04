@@ -1,5 +1,5 @@
-import prisma from "../../../db";
 import { getMergedRequiredCourseNos } from "./mergeOverride";
+import { CourseSkillService } from "../../skill/service";
 
 export type SkillListItem = {
   skillID: string;
@@ -18,34 +18,27 @@ export async function getSkillList(program: string, curriculumYear: number) {
     };
   }
 
-  const courseNos = merged.courseNos;
-
-  const courseSkills = courseNos.length
-    ? await prisma.courseSkill.findMany({
-        where: { courseNo: { in: courseNos } },
-        select: { skills: true },
-      })
-    : [];
-
-  // dedupe by skillID only (name can be duplicated)
-  const map = new Map<string, string>(); // skillID -> name (first seen)
-  for (const cs of courseSkills) {
-    for (const s of cs.skills ?? []) {
-      if (!s?.id) continue;
-
-      const skillID = String(s.id);
-      if (map.has(skillID)) continue;
-
-      const name = String(s.name ?? "-");
-      map.set(skillID, name);
-    }
+  const courseNos = merged.courseNos ?? [];
+  if (courseNos.length === 0) {
+    return {
+      curriculum_year: String(merged.year),
+      program: merged.curriculumProgram,
+      skill_list: [] as SkillListItem[],
+    };
   }
 
-  const skill_list: SkillListItem[] = Array.from(map.entries())
-    .map(([skillID, name]) => ({
-      skillID,
-      name,
-      max_level: 1,
+  let maxLevels: Array<{ skillID: string; skillName: string; maxLevel: number }> = [];
+  try {
+    maxLevels = await CourseSkillService.getMaxLevel(courseNos);
+  } catch {
+    maxLevels = [];
+  }
+
+  const skill_list: SkillListItem[] = maxLevels
+    .map((x) => ({
+      skillID: String(x.skillID),
+      name: String(x.skillName ?? "-"),
+      max_level: Number(x.maxLevel ?? 0),
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 

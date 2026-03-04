@@ -2,8 +2,8 @@ import axios from 'axios';
 import prisma from '../../../db';
 import { scanTeacherCourse } from './scanTeacherCourse';
 
-const BASE_URL = process.env.CPE_API_BASE_URL!;
-const API_KEY = process.env.CPE_API_KEY!;
+const BASE_URL = process.env.CPE_API_URL!;
+const API_KEY = process.env.CPE_API_TOKEN!;
 
 const headers = {
   Authorization: `Bearer ${API_KEY}`,

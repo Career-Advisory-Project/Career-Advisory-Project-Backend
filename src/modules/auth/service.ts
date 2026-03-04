@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { AuthModel } from "./model";
-
+import prisma from "../../db";
 
 const axiosInstance = axios.create({
     baseURL: process.env.CMU_ENTRAID_GET_TOKEN_URL as string
@@ -62,5 +62,36 @@ export class Auth {
         }
     }
 
+    static  getRole = async (cmuitaccount:string):Promise<string | null | undefined> =>{
+        const userInfo = await prisma.userList.findFirst({
+            where : {
+                cmuitaccount:cmuitaccount
+            },
+            select:{
+                role:true
+            }
+        })
+        const role = userInfo?.role
+
+        if(!role) return null
+        return role;
+    }
+
+    static updateDashboard = async (user:AuthModel.basicUserInfoType)=>{
+        try{
+            await prisma.userList.update({
+                where:{
+                    cmuitaccount:user.cmuitaccount
+                },
+                data:{
+                    fname:user.firstname_EN,
+                    lname:user.lastname_EN
+                }
+            })
+        }
+        catch(error){
+            throw Error("User is not in the allowed list.")
+        }
+    }
 
 }
