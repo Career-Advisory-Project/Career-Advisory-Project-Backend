@@ -10,7 +10,7 @@ export class Auth {
     static async getAccessToken(authCode: string): Promise<string | null> {
         try {
             const tokenUrl = process.env.CMU_ENTRAID_GET_TOKEN_URL as string;
-            
+
             // Prepare data as x-www-form-urlencoded
             const params = new URLSearchParams();
             params.append('code', authCode);
@@ -28,6 +28,7 @@ export class Auth {
                 {
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
+                        "Connection": "close"
                     }
                 }
             );
@@ -56,40 +57,40 @@ export class Auth {
                     headers: { Authorization: "Bearer " + accessToken },
                 }
             );
-            return response.data ;
+            return response.data;
         } catch (err) {
             return null;
         }
     }
 
-    static  getRole = async (cmuitaccount:string):Promise<string | null | undefined> =>{
+    static getRole = async (cmuitaccount: string): Promise<string | null | undefined> => {
         const userInfo = await prisma.userList.findFirst({
-            where : {
-                cmuitaccount:cmuitaccount
+            where: {
+                cmuitaccount: cmuitaccount
             },
-            select:{
-                role:true
+            select: {
+                role: true
             }
         })
         const role = userInfo?.role
 
-        if(!role) return null
+        if (!role) return null
         return role;
     }
 
-    static updateDashboard = async (user:AuthModel.basicUserInfoType)=>{
-        try{
+    static updateDashboard = async (user: AuthModel.basicUserInfoType) => {
+        try {
             await prisma.userList.update({
-                where:{
-                    cmuitaccount:user.cmuitaccount
+                where: {
+                    cmuitaccount: user.cmuitaccount
                 },
-                data:{
-                    fname:user.firstname_EN,
-                    lname:user.lastname_EN
+                data: {
+                    fname: user.firstname_EN,
+                    lname: user.lastname_EN
                 }
             })
         }
-        catch(error){
+        catch (error) {
             throw Error("User is not in the allowed list.")
         }
     }

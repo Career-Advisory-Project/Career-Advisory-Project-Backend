@@ -51,7 +51,6 @@ export const courseSkillController = new Elysia({ prefix: "/courseskills" })
   .get(
     "/:courseNo",
     async ({ params: { courseNo }, set }) => {
-      console.log("Hello");
       try {
         return await CourseSkillService.getByCourseNo(courseNo);
       } catch (error: any) {
