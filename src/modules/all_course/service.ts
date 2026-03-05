@@ -1,22 +1,17 @@
 import axios from "axios";
-
+import { cmuApi } from "../../utils/cmuApi";
 const cpeApiUrl = process.env.CPE_API_URL ?? "";
 const token = process.env.CPE_API_TOKEN;
 
-const axiosInstance = axios.create({
-    baseURL: cpeApiUrl,
-    headers: {
-        'Authorization': `Bearer ${token}`
-    }
-});
+
 
 export class AllCourse {
     static async getAllCourse() {
         try {
-            const response = await axiosInstance.get('/course/detail');
+            const response = await cmuApi.get('/course/detail');
             const data = response.data;
             const courseDetails = data.courseDetails
-            const dataToReturn = courseDetails.map((courseDetail: any) => {
+            const dataToReturn = courseDetails?.map((courseDetail: any) => {
                 return {
                     courseNo: courseDetail.courseNo,
                     name: courseDetail.courseNameEN,
@@ -35,7 +30,7 @@ export class AllCourse {
 
     static async getCourseByCourseNo(courseNo: string) {
         try {
-            const response = await axiosInstance.get(`/course/detail/`, {
+            const response = await cmuApi.get(`/course/detail/`, {
                 params: {
 
                     courseNo: courseNo
