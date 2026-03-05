@@ -7,6 +7,7 @@ const API_KEY = process.env.CPE_API_TOKEN!;
 
 const headers = {
   Authorization: `Bearer ${API_KEY}`,
+  Connection: "close",
 };
 
 export async function scanAllTeachers() {
