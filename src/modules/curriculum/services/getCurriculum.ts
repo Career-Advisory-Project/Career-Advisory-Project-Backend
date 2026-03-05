@@ -9,6 +9,7 @@ const API_KEY = process.env.CPE_API_TOKEN!;
 const headers = {
   Authorization: `Bearer ${API_KEY}`,
   Accept: "application/json",
+  Connection: "close",
 };
 
 type CpeCurriculumCourse = {
