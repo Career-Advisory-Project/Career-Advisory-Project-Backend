@@ -11,6 +11,7 @@ import { dashboardRoute } from "./modules/dashboard";
 import { UserManagerRoute } from "./modules/allowList";
 import { pino } from "pino";
 import { profile } from "bun:jsc";
+import { AuthModel } from "./modules/auth/model";
 
 const logger = pino({
   level: 'info',
@@ -19,18 +20,22 @@ const logger = pino({
 
 export const app = new Elysia()
   .use(swagger())
+  .state("auth",{profile:null as any})
   .use(cors({
     origin: true,
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization']
   }))
-  .onAfterResponse(({path, request, set, responseValue }) => {
+  .onAfterResponse(({path, request, set, responseValue ,store}) => {
     if (path.startsWith('/all_course')) {
       return;
     }
+    const { profile } = store?.auth
+    const cmuitaccount = profile?.cmuitaccount
     const { method, url, headers } = request
     const { status, headers: resHeaders } = set
     logger.info({
+      cmuitaccount,
       method,
       url,
       status,

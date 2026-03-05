@@ -1,13 +1,20 @@
 import { Context, PreContext } from 'elysia'
+import { AuthModel } from '../auth/model'
 
 type AuthContext = Context & {
     jwt: {
         verify: (token: string) => Promise<any>
+    },
+    // Tell TypeScript about the state you defined in your main app
+    store: {
+        auth: {
+            profile: AuthModel.basicUserInfoWithRoleType // Replace 'any' with your actual Profile type if you have one!
+        }
     }
 }
 
 export const validateUser = async (context: Context) => {
-    const { jwt, cookie: { "cmu-entraid-example-token": cmuToken }, set } = context as AuthContext;
+    const { jwt, cookie: { "cmu-entraid-example-token": cmuToken }, set,store } = context as AuthContext;
 
 
     if (!cmuToken?.value) {
@@ -35,7 +42,7 @@ export const validateUser = async (context: Context) => {
             message:"Unauthorized: User cmu account is not allowed"
         }
     }
-    
+    store.auth.profile = profile
 }
 
 export const validateAdmin = async (context: Context) =>{
@@ -64,7 +71,7 @@ const { jwt, cookie: { "cmu-entraid-example-token": cmuToken }, set } = context 
         set.status = 401
         return{
             ok:false,
-            message:"User is authorized"
+            message:"Unauthorized: Admin access required"
         }
     }
 }
