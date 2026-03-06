@@ -39,7 +39,6 @@ export const app = new Elysia()
       url,
       status,
       date,
-      // response: responseValue, 
     })
   })
   .use(auth)
