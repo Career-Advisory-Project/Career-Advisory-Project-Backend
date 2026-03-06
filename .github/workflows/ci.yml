@@ -25,4 +25,6 @@ jobs:
       - name: Generate Prisma Client
         run: bunx prisma generate
       - name: Run tests
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: bun test
