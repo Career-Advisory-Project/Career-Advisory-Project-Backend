@@ -27,19 +27,19 @@ export const app = new Elysia()
     allowedHeaders: ['Content-Type', 'Authorization']
   }))
   .onAfterResponse(({path, request, set, responseValue ,store}) => {
-    if (path.startsWith('/all_course')) {
-      return;
-    }
     const { profile } = store?.auth
     const cmuitaccount = profile?.cmuitaccount
     const { method, url, headers } = request
     const { status, headers: resHeaders } = set
+    const today:Date = new Date();
+    const date = today.toLocaleDateString();
     logger.info({
       cmuitaccount,
       method,
       url,
       status,
-      response: responseValue,
+      date,
+      // response: responseValue, 
     })
   })
   .use(auth)

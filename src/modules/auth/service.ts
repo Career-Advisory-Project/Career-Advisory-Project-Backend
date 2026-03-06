@@ -1,10 +1,6 @@
-import axios, { AxiosError } from "axios";
 import { AuthModel } from "./model";
 import prisma from "../../db";
 
-const axiosInstance = axios.create({
-    baseURL: process.env.CMU_ENTRAID_GET_TOKEN_URL as string
-});
 export class Auth {
 
     static async getAccessToken(authCode: string): Promise<string | null> {
@@ -20,44 +16,47 @@ export class Auth {
             params.append('scope', process.env.SCOPE as string);
             params.append('grant_type', 'authorization_code');
 
-            // Do NOT use the axiosInstance with baseURL here if tokenUrl is absolute.
-            // Just use plain axios.post
-            const response = await axios.post(
-                tokenUrl,
-                params, // Pass the URLSearchParams object directly
-                {
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        "Connection": "close"
-                    }
+            const response = await fetch(tokenUrl, {
+                method: 'POST',
+                body: params,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Connection': 'close' 
                 }
-            );
+            });
 
-            return response.data.access_token;
-        }
-        catch (error: any) {
-            console.log("Error getting access token:");
-            // Log the actual error message from Microsoft/Entra
-            if (error.response) {
-                console.log("Status:", error.response.status);
-                console.log("Data:", error.response.data);
-            } else {
-                console.log(error.message);
+            if (!response.ok) {
+                const errorData = await response.text();
+                console.log("Entra ID Error Status:", response.status);
+                console.log("Entra ID Error Data:", errorData);
+                return null;
             }
+
+            const data = await response.json();
+            return data.access_token;
+
+        } catch (error: any) {
+            console.log("Error getting access token:", error.message);
             return null;
         }
     }
 
     static async getBasicInfo(accessToken: string): Promise<AuthModel.basicUserInfoType | null> {
         try {
-            const besicinfoUrl = process.env.CMU_ENTRAID_GET_BASIC_INFO as string;
-            const response = await axios.get(
-                besicinfoUrl,
-                {
-                    headers: { Authorization: "Bearer " + accessToken },
+            const basicInfoUrl = process.env.CMU_ENTRAID_GET_BASIC_INFO as string;
+            
+            const response = await fetch(basicInfoUrl, {
+                method: 'GET',
+                headers: { 
+                    'Authorization': "Bearer " + accessToken,
+                    'Connection': 'close' 
                 }
-            );
-            return response.data;
+            });
+
+            if (!response.ok) return null;
+            
+            const data = await response.json();
+            return data;
         } catch (err) {
             return null;
         }
@@ -71,11 +70,9 @@ export class Auth {
             select: {
                 role: true
             }
-        })
-        const role = userInfo?.role
-
-        if (!role) return null
-        return role;
+        });
+        
+        return userInfo?.role || null;
     }
 
     static updateDashboard = async (user: AuthModel.basicUserInfoType) => {
@@ -88,11 +85,9 @@ export class Auth {
                     fname: user.firstname_EN,
                     lname: user.lastname_EN
                 }
-            })
-        }
-        catch (error) {
-            throw Error("User is not in the allowed list.")
+            });
+        } catch (error) {
+            throw Error("User is not in the allowed list.");
         }
     }
-
 }
