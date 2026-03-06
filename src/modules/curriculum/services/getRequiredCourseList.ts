@@ -6,18 +6,36 @@ export type RequiredCourseItem = {
   courseNo: string;
   name: string;
   credit: string;
+  recommendSemester: string;
+  recommendYear: string;
 };
 
-function buildCreditMapFromCurr(curr: any): Map<string, number> {
-  const map = new Map<string, number>();
+type CourseMeta = {
+  credit: number;
+  recommendSemester: number | null;
+  recommendYear: number | null;
+};
 
+function buildCourseMetaMapFromCurr(curr: any): Map<string, CourseMeta> {
+  const map = new Map<string, CourseMeta>();
   const addCourses = (courses: any[] | undefined | null) => {
     for (const c of courses ?? []) {
       const courseNo = normalizeCourseNo(c.courseNo);
-      const credits = Number(c.credits);
-      if (courseNo && Number.isFinite(credits) && !map.has(courseNo)) {
-        map.set(courseNo, credits);
-      }
+      const credit = Number(c.credits);
+
+      if (!courseNo || !Number.isFinite(credit) || map.has(courseNo)) continue;
+
+      map.set(courseNo, {
+        credit,
+        recommendSemester:
+          c.recommendSemester === null || c.recommendSemester === undefined
+            ? null
+            : Number(c.recommendSemester),
+        recommendYear:
+          c.recommendYear === null || c.recommendYear === undefined
+            ? null
+            : Number(c.recommendYear),
+      });
     }
   };
 
@@ -36,8 +54,8 @@ function buildCreditMapFromCurr(curr: any): Map<string, number> {
   return map;
 }
 
-async function fillMissingCreditsFromOtherCurriculums(
-  creditMap: Map<string, number>,
+async function fillMissingCourseMetaFromOtherCurriculums(
+  metaMap: Map<string, CourseMeta>,
   missingCourseNos: string[]
 ) {
   if (missingCourseNos.length === 0) return;
@@ -49,17 +67,17 @@ async function fillMissingCreditsFromOtherCurriculums(
     },
   });
 
-  const global = new Map<string, number>();
+  const global = new Map<string, CourseMeta>();
   for (const curr of currs) {
-    const m = buildCreditMapFromCurr(curr);
+    const m = buildCourseMetaMapFromCurr(curr);
     for (const [k, v] of m.entries()) {
       if (!global.has(k)) global.set(k, v);
     }
   }
 
   for (const courseNo of missingCourseNos) {
-    const c = global.get(courseNo);
-    if (Number.isFinite(c)) creditMap.set(courseNo, c!);
+    const meta = global.get(courseNo);
+    if (meta) metaMap.set(courseNo, meta);
   }
 }
 
@@ -90,10 +108,10 @@ export async function getRequiredCourseList(program: string, curriculumYear: num
     },
   });
 
-  const creditMap = curr ? buildCreditMapFromCurr(curr) : new Map<string, number>();
-  const missing = courseNos.filter((c) => !creditMap.has(c));
+  const metaMap = curr ? buildCourseMetaMapFromCurr(curr) : new Map<string, CourseMeta>();
+  const missing = courseNos.filter((c) => !metaMap.has(c));
 
-  await fillMissingCreditsFromOtherCurriculums(creditMap, missing);
+  await fillMissingCourseMetaFromOtherCurriculums(metaMap, missing);
 
   const courses = courseNos.length
     ? await prisma.course.findMany({
@@ -105,11 +123,23 @@ export async function getRequiredCourseList(program: string, curriculumYear: num
   const nameMap = new Map(courses.map((c) => [normalizeCourseNo(c.courseNo), c.name]));
 
   const course_list: RequiredCourseItem[] = courseNos
-    .map((courseNo) => ({
-      courseNo,
-      name: nameMap.get(courseNo) ?? "-",
-      credit: String(creditMap.get(courseNo) ?? "-"),
-    }))
+    .map((courseNo) => {
+      const meta = metaMap.get(courseNo);
+
+      return {
+        courseNo,
+        name: nameMap.get(courseNo) ?? "-",
+        credit: String(meta?.credit ?? "-"),
+        recommendSemester:
+          meta?.recommendSemester !== null && meta?.recommendSemester !== undefined
+            ? String(meta.recommendSemester)
+            : "-",
+        recommendYear:
+          meta?.recommendYear !== null && meta?.recommendYear !== undefined
+            ? String(meta.recommendYear)
+            : "-",
+      };
+    })
     .sort((a, b) => Number(a.courseNo) - Number(b.courseNo));
 
   return {
