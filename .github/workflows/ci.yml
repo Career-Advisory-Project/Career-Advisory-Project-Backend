@@ -10,6 +10,10 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest 
     
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      CPE_API_URL : ${{ secrets.CPE_API_URL }}
+      CPE_API_TOKEN : ${{ secrets.CPE_API_TOKEN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -17,14 +21,13 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest 
+          bun-version: latest
           
       - name: Install dependencies
         run: bun install
-      
+        
       - name: Generate Prisma Client
         run: bunx prisma generate
+        
       - name: Run tests
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: bun test
