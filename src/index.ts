@@ -42,17 +42,17 @@ export const app = new Elysia()
     })
   })
   .use(auth)
-  // .onBeforeHandle(validateUser)
+  .onBeforeHandle(validateUser)
   .use(allCourse)
   .use(dashboardRoute)
   .use(courseRoute)
   .use(courseSkillController)
-  // .guard(
-  //   { beforeHandle: validateAdmin },
-  //   (app) => app
-  //     .use(UserManagerRoute)
-  //     .use(curriculumModule)
-  // )
+  .guard(
+    { beforeHandle: validateAdmin },
+    (app) => app
+      .use(UserManagerRoute)
+      .use(curriculumModule)
+  )
   .listen(3000);
 
 
