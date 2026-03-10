@@ -299,9 +299,9 @@ export const CourseSkillService = {
         return await prisma.courseSkill.create({
           data: {
             courseNo: courseNo,
-            name: skill.name,
-            descTH: skill.descTH,
-            descENG: skill.descENG,
+            name: checkcourse.name,
+            descTH: checkcourse.descTH,
+            descENG: checkcourse.descENG,
             skills: [skillData],
           },
         });
