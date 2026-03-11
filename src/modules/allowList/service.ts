@@ -2,8 +2,10 @@ import prisma from "../../db";
 import { UserManagerModel } from "./model";
 export class UserManager {
     public static isValidEmail(cmuitaccount: string) {
-        const regex = /^[a-zA-Z0-9._%+-]+@cmu\.ac\.th$/i;
+        // const regex = /^[a-zA-Z0-9._%+-]+@cmu\.ac\.th$/i; // for cmu only account
+        const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i;
         return regex.test(cmuitaccount.trim());
+
     }
     public static getBySubstring = async (substr: string, role: string) => {
         try {
